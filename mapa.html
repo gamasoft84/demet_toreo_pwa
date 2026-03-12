@@ -49,6 +49,23 @@
         }
         #sugerencias li:hover, #sugerencias li.focused { background: #f0f4ff; }
         .leaflet-control-layers { border-radius: 8px !important; overflow: hidden; }
+
+        .puerta-car-marker {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0;
+            border-radius: 0;
+            background: transparent;
+            box-shadow: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #1a73e8; /* azul tipo Google Maps */
+            border: none;
+        }
+        .puerta-car-marker .emoji {
+            font-size: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -62,7 +79,6 @@
     <ul id="sugerencias" aria-label="Sugerencias de edificios"></ul>
     <div style="display:flex; gap:6px; width:100%; flex-wrap: wrap;">
         <button onclick="irAMiUbicacion()" title="Centrar en mi ubicación">📍 Mi ubicación</button>
-        <button class="secondary" onclick="verTodos()" title="Encuadrar todos los edificios">🗺️ Ver todos</button>
     </div>
 </div>
 
@@ -88,7 +104,7 @@
         { collapsed: false }
     ).addTo(map);
 
-    // 3. Edificios (extraídos de Demet Toreo.kmz)
+    // 3. Edificios (leídos en este momento desde Demet Toreo.kmz)
     const edificios = [
         { nombre: "Hamburgo", lat: 19.45736491, lng: -99.21446269 },
         { nombre: "Eslovaquía", lat: 19.45712396, lng: -99.21388754 },
@@ -148,7 +164,7 @@
         { nombre: "Moscu", lat: 19.45594902, lng: -99.21160914 },
         { nombre: "Berna", lat: 19.45605780, lng: -99.21156581 },
         { nombre: "Oslo", lat: 19.45635541, lng: -99.21146957 },
-        { nombre: "Bulgaria", lat: 19.45649476, lng: -99.21153325 },
+        { nombre: "Belgrado", lat: 19.45645470, lng: -99.21142176 },
         { nombre: "Estocolmo", lat: 19.45674335, lng: -99.21133109 },
         { nombre: "Varsovia", lat: 19.45677102, lng: -99.21145122 },
         { nombre: "Paris", lat: 19.45703713, lng: -99.21065450 },
@@ -163,6 +179,7 @@
         { nombre: "Londres", lat: 19.45716004, lng: -99.21139977 },
         { nombre: "Viena", lat: 19.45746738, lng: -99.21196433 },
         { nombre: "Praga", lat: 19.45735671, lng: -99.21199842 },
+        // Los últimos puntos del KMZ son puertas, ya los manejamos en el array `puertas`
     ];
 
     // Marcadores de edificios (se crean pero no se muestran al cargar)
@@ -174,40 +191,30 @@
         markers[edif.nombre.toLowerCase()] = marker;
     });
 
-    // 3.b Polígonos de puertas (desde Demet Toreo.kmz)
-    const puertas = [
-        {
-            nombre: "Puerta 1 - Toreo I",
-            coords: [
-                [19.456306, -99.213359],
-                [19.456287, -99.213296],
-            ],
-        },
-        {
-            nombre: "Puerta 2 - Toreo I",
-            coords: [
-                [19.456056, -99.212733],
-                [19.456032, -99.212669],
-            ],
-        },
-        {
-            nombre: "Puerta 3 - Toreo I",
-            coords: [
-                [19.455869, -99.212029],
-                [19.455855, -99.211988],
-            ],
-        },
-    ];   
-    // Dibujar polígonos de puertas
-    const puertaLayers = [];
-    puertas.forEach(puerta => {
-        const poly = L.polygon(puerta.coords, {
-            color: '#e53935',
-            weight: 3,
-            fillColor: '#ffebee',
-            fillOpacity: 0.5,
-        }).addTo(map).bindPopup(`<b>${puerta.nombre}</b>`);
-        puertaLayers.push(poly);
+    // 3.b Puertas de acceso (puntos) extraídas del KMZ
+    const puertasPunto = [
+        { nombre: "Puerta 3 - Toreo I", lat: 19.45581988, lng: -99.21202550 },
+        { nombre: "Puerta 2 - Toreo I", lat: 19.45602920, lng: -99.21269535 },
+        { nombre: "Puerta 2 - Toreo II", lat: 19.45657398, lng: -99.21424090 },
+        { nombre: "Puerta 1 - Toreo II", lat: 19.45792777, lng: -99.21442222 },
+        { nombre: "Puerta 4 - Toreo II", lat: 19.45666436, lng: -99.21043991 },
+    ];
+
+    // Dibujar puntos de puertas con icono de auto (incluye Toreo I y Toreo II)
+    puertasPunto.forEach(p => {
+        const carIcon = L.divIcon({
+            className: '',
+            html: `
+                <div class="puerta-car-marker">
+                    <span class="emoji">🚗</span>
+                    <span>${p.nombre}</span>
+                </div>
+            `,
+            iconSize: [0, 0],
+            iconAnchor: [0, 0],
+        });
+
+        L.marker([p.lat, p.lng], { icon: carIcon }).addTo(map);
     });
 
     // 4. Búsqueda (exacta o parcial) y sugerencias
@@ -283,24 +290,6 @@
             irAEdificio(nombres[0]);
         } else {
             alert("Ningún edificio coincide. Escribe parte del nombre o elige de la lista.");
-        }
-    }
-
-    function verTodos() {
-        const todos = Object.values(markers);
-        if (todos.length === 0) return;
-
-        // Mostrar todos los marcadores de edificios
-        todos.forEach(m => {
-            if (!map.hasLayer(m)) {
-                m.addTo(map);
-            }
-        });
-        marcadorEdificioActual = null;
-
-        const group = L.featureGroup(todos);
-        if (group.getBounds().isValid()) {
-            map.fitBounds(group.getBounds(), { padding: [40, 40], maxZoom: 17 });
         }
     }
 
