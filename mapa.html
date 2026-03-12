@@ -52,16 +52,18 @@
 
         .puerta-car-marker {
             display: inline-flex;
+            flex-direction: column;
             align-items: center;
-            gap: 4px;
+            gap: 2px;
             padding: 0;
-            border-radius: 0;
             background: transparent;
             box-shadow: none;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #1a73e8; /* azul tipo Google Maps */
             border: none;
+            color: #1a73e8; /* azul tipo Google Maps */
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.1;
         }
         .puerta-car-marker .emoji {
             font-size: 1rem;
@@ -202,12 +204,17 @@
 
     // Dibujar puntos de puertas con icono de auto (incluye Toreo I y Toreo II)
     puertasPunto.forEach(p => {
+        const partes = p.nombre.split(' - ');
+        const linea1 = partes[1] || '';
+        const linea2 = partes[0] || '';
+
         const carIcon = L.divIcon({
             className: '',
             html: `
                 <div class="puerta-car-marker">
                     <span class="emoji">🚗</span>
-                    <span>${p.nombre}</span>
+                    <span style="white-space:nowrap;">${linea1}</span>
+                    ${linea2 ? `<span style="white-space:nowrap;">${linea2}</span>` : ''}
                 </div>
             `,
             iconSize: [0, 0],
