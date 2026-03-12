@@ -136,7 +136,7 @@
 <div id="search-container">
     <div class="search-row">
         <input type="text" id="busqueda" placeholder="Buscar edificio..." autocomplete="off"
-               oninput="mostrarSugerencias()" onkeydown="teclaBusqueda(event)" onfocus="mostrarSugerencias()">
+               oninput="mostrarSugerencias()" onkeydown="teclaBusqueda(event)" onfocus="document.getElementById('busqueda').value=''; mostrarSugerencias();">
         <button onclick="buscar()">Buscar</button>
     </div>
     <ul id="sugerencias" aria-label="Sugerencias de edificios"></ul>
