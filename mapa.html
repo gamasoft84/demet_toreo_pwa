@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Buscador de Edificios</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; color: #1a1a1a; }
+        #map { height: 100vh; width: 100vw; }
+        #search-container {
+            position: absolute; top: 12px; left: 12px; right: 12px; z-index: 1000;
+            max-width: 420px;
+            background: rgba(255,255,255,0.96); padding: 12px; border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+            display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+        }
+        #search-container .search-row { display: flex; gap: 6px; flex: 1; min-width: 0; }
+        input {
+            padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 8px;
+            font-size: 0.95rem; flex: 1; min-width: 0;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input:focus { outline: none; border-color: #2b7cff; box-shadow: 0 0 0 3px rgba(43,124,255,0.2); }
+        input::placeholder { color: #888; }
+        button {
+            padding: 10px 14px; background: #2b7cff; color: white; border: none; border-radius: 8px;
+            font-size: 0.9rem; font-weight: 500; cursor: pointer; white-space: nowrap;
+            transition: background 0.2s, transform 0.05s;
+        }
+        button:hover { background: #1a6ae6; }
+        button:active { transform: scale(0.98); }
+        button.secondary { background: #f0f0f0; color: #333; }
+        button.secondary:hover { background: #e0e0e0; }
+        #sugerencias {
+            width: 100%; max-height: 180px; overflow-y: auto;
+            background: white; border: 1px solid #e0e0e0; border-radius: 8px;
+            margin-top: 2px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            display: none; list-style: none; padding: 4px; margin: 0;
+        }
+        #sugerencias.visible { display: block; }
+        #sugerencias li {
+            padding: 10px 12px; cursor: pointer; border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        #sugerencias li:hover, #sugerencias li.focused { background: #f0f4ff; }
+        .leaflet-control-layers { border-radius: 8px !important; overflow: hidden; }
+    </style>
+</head>
+<body>
+
+<div id="search-container">
+    <div class="search-row">
+        <input type="text" id="busqueda" placeholder="Buscar edificio..." autocomplete="off"
+               oninput="mostrarSugerencias()" onkeydown="teclaBusqueda(event)" onfocus="mostrarSugerencias()">
+        <button onclick="buscar()">Buscar</button>
+    </div>
+    <ul id="sugerencias" aria-label="Sugerencias de edificios"></ul>
+    <div style="display:flex; gap:6px; width:100%; flex-wrap: wrap;">
+        <button onclick="irAMiUbicacion()" title="Centrar en mi ubicación">📍 Mi ubicación</button>
+        <button class="secondary" onclick="verTodos()" title="Encuadrar todos los edificios">🗺️ Ver todos</button>
+    </div>
+</div>
+
+<div id="map"></div>
+
+<script>
+    // 1. Configurar el mapa centrado en tu zona (Lomas de Sotelo)
+    const map = L.map('map').setView([19.45711, -99.21237], 17);
+
+    // 2. Capas: callejero y satélite
+    const mapaCalles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    });
+    const mapaSatelite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: '© Esri'
+    });
+
+    mapaCalles.addTo(map);
+
+    L.control.layers(
+        { 'Mapa': mapaCalles, 'Satélite': mapaSatelite },
+        null,
+        { collapsed: false }
+    ).addTo(map);
+
+    // 3. Edificios (incluye los extraídos de Demet Toreo.kmz)
+    const edificios = [
+        // Del KMZ "Demet Toreo":
+        { nombre: "Hamburgo", lat: 19.457317, lng: -99.214454 },
+        { nombre: "Eslovaquía", lat: 19.457061, lng: -99.213862 },
+        { nombre: "Managua", lat: 19.457221, lng: -99.213263 },
+        { nombre: "Mónaco", lat: 19.456639, lng: -99.212916 },
+        { nombre: "Atenas", lat: 19.456993, lng: -99.211174 },
+    ];
+
+    const markers = {};
+
+    // Dibujar los edificios en el mapa
+    edificios.forEach(edif => {
+        const marker = L.marker([edif.lat, edif.lng]).addTo(map)
+            .bindPopup(`<b>${edif.nombre}</b>`);
+        markers[edif.nombre.toLowerCase()] = marker;
+    });
+
+    // 4. Búsqueda (exacta o parcial) y sugerencias
+    function edificiosCoincidentes(texto) {
+        const t = (texto || '').toLowerCase().trim();
+        if (!t) return edificios.map(e => e.nombre);
+        return edificios
+            .filter(e => e.nombre.toLowerCase().includes(t))
+            .map(e => e.nombre);
+    }
+
+    function mostrarSugerencias() {
+        const input = document.getElementById('busqueda');
+        const ul = document.getElementById('sugerencias');
+        const nombres = edificiosCoincidentes(input.value);
+        ul.innerHTML = '';
+        ul.classList.remove('visible');
+        if (nombres.length === 0) {
+            ul.classList.remove('visible');
+            return;
+        }
+        nombres.slice(0, 12).forEach(nombre => {
+            const li = document.createElement('li');
+            li.textContent = nombre;
+            li.onclick = () => { input.value = nombre; ul.classList.remove('visible'); irAEdificio(nombre); };
+            ul.appendChild(li);
+        });
+        ul.classList.add('visible');
+    }
+
+    function teclaBusqueda(e) {
+        const ul = document.getElementById('sugerencias');
+        const items = ul.querySelectorAll('li');
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (items.length > 0 && document.activeElement?.id === 'busqueda') {
+                const first = items[0].textContent;
+                document.getElementById('busqueda').value = first;
+                ul.classList.remove('visible');
+                irAEdificio(first);
+            } else {
+                buscar();
+            }
+            return;
+        }
+        if (e.key === 'Escape') {
+            ul.classList.remove('visible');
+            document.getElementById('busqueda').blur();
+        }
+    }
+
+    function irAEdificio(nombre) {
+        const key = nombre.toLowerCase();
+        if (markers[key]) {
+            const marker = markers[key];
+            map.setView(marker.getLatLng(), 19);
+            marker.openPopup();
+        }
+    }
+
+    function buscar() {
+        const query = document.getElementById('busqueda').value.trim();
+        const nombres = edificiosCoincidentes(query);
+        document.getElementById('sugerencias').classList.remove('visible');
+        if (nombres.length > 0) {
+            irAEdificio(nombres[0]);
+        } else {
+            alert("Ningún edificio coincide. Escribe parte del nombre o elige de la lista.");
+        }
+    }
+
+    function verTodos() {
+        const group = L.featureGroup(Object.values(markers));
+        if (group.getBounds().isValid()) {
+            map.fitBounds(group.getBounds(), { padding: [40, 40], maxZoom: 17 });
+        }
+    }
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('#search-container')) {
+            document.getElementById('sugerencias').classList.remove('visible');
+        }
+    });
+
+    // 5. Geolocalización: marcador de "Mi ubicación"
+    let marcadorUbicacion = null;
+    let circuloPrecision = null;
+
+    function irAMiUbicacion() {
+        if (!navigator.geolocation) {
+            alert("Tu navegador no soporta geolocalización.");
+            return;
+        }
+        map.locate({ setView: true, maxZoom: 18, enableHighAccuracy: true });
+    }
+
+    map.on('locationfound', function(e) {
+        const radio = e.accuracy / 2;
+
+        if (marcadorUbicacion) {
+            map.removeLayer(marcadorUbicacion);
+        }
+        if (circuloPrecision) {
+            map.removeLayer(circuloPrecision);
+        }
+
+        circuloPrecision = L.circle(e.latlng, {
+            radius: radio,
+            color: '#2b7cff',
+            fillColor: '#2b7cff',
+            fillOpacity: 0.15,
+            weight: 2
+        }).addTo(map);
+
+        marcadorUbicacion = L.marker(e.latlng, {
+            icon: L.divIcon({
+                className: 'mi-ubicacion-marker',
+                html: '<div style="background:#2b7cff;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.4);"></div>',
+                iconSize: [22, 22],
+                iconAnchor: [11, 11]
+            })
+        }).addTo(map).bindPopup("<b>Estás aquí</b>");
+    });
+
+    map.on('locationerror', function(e) {
+        alert("No se pudo obtener tu ubicación. Revisa que hayas permitido el acceso a la ubicación en el navegador.");
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,12 @@
+# Extraído del KMZ (opcional, se puede regenerar)
+kmz_extracted/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# IDE / editor
+.idea/
+.vscode/
+*.swp
+*.swo
