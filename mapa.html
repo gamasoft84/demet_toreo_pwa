@@ -165,6 +165,15 @@
         { nombre: "Praga", lat: 19.45735671, lng: -99.21199842 },
     ];
 
+    // Marcadores de edificios (se crean pero no se muestran al cargar)
+    const markers = {};
+    let marcadorEdificioActual = null;
+
+    edificios.forEach(edif => {
+        const marker = L.marker([edif.lat, edif.lng]).bindPopup(`<b>${edif.nombre}</b>`);
+        markers[edif.nombre.toLowerCase()] = marker;
+    });
+
     // 3.b Polígonos de puertas (desde Demet Toreo.kmz)
     const puertas = [
         {
@@ -252,11 +261,18 @@
 
     function irAEdificio(nombre) {
         const key = nombre.toLowerCase();
-        if (markers[key]) {
-            const marker = markers[key];
-            map.setView(marker.getLatLng(), 19);
-            marker.openPopup();
+        const marker = markers[key];
+        if (!marker) return;
+
+        // Ocultar marcador anterior si estaba visible
+        if (marcadorEdificioActual && map.hasLayer(marcadorEdificioActual)) {
+            map.removeLayer(marcadorEdificioActual);
         }
+
+        marcadorEdificioActual = marker;
+        marker.addTo(map);
+        map.setView(marker.getLatLng(), 19);
+        marker.openPopup();
     }
 
     function buscar() {
@@ -271,7 +287,18 @@
     }
 
     function verTodos() {
-        const group = L.featureGroup(Object.values(markers));
+        const todos = Object.values(markers);
+        if (todos.length === 0) return;
+
+        // Mostrar todos los marcadores de edificios
+        todos.forEach(m => {
+            if (!map.hasLayer(m)) {
+                m.addTo(map);
+            }
+        });
+        marcadorEdificioActual = null;
+
+        const group = L.featureGroup(todos);
         if (group.getBounds().isValid()) {
             map.fitBounds(group.getBounds(), { padding: [40, 40], maxZoom: 17 });
         }
