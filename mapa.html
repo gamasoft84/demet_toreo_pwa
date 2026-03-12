@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Buscador de Edificios</title>
+    <title>Buscador de Edificios - Demet Toreo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="description" content="Mapa de edificios y puertas de acceso de Demet Toreo. Busca un edificio y ubica puertas de acceso vehicular." />
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -26,7 +27,9 @@
             transition: border-color 0.2s, box-shadow 0.2s;
         }
         input:focus { outline: none; border-color: #2b7cff; box-shadow: 0 0 0 3px rgba(43,124,255,0.2); }
+        input:focus-visible { outline: 2px solid #2b7cff; outline-offset: 2px; }
         input::placeholder { color: #888; }
+        button:focus-visible { outline: 2px solid #2b7cff; outline-offset: 2px; }
         button {
             padding: 10px 14px; background: #2b7cff; color: white; border: none; border-radius: 8px;
             font-size: 0.9rem; font-weight: 500; cursor: pointer; white-space: nowrap;
@@ -129,24 +132,28 @@
             font-size: 0.7rem;
             font-weight: 700;
         }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
     </style>
 </head>
 <body>
 
-<div id="search-container">
+<div id="search-container" role="search" aria-label="Buscar edificio en el mapa">
     <div class="search-row">
         <input type="text" id="busqueda" placeholder="Buscar edificio..." autocomplete="off"
+               aria-label="Nombre del edificio" aria-autocomplete="list" aria-controls="sugerencias"
                oninput="mostrarSugerencias()" onkeydown="teclaBusqueda(event)" onfocus="document.getElementById('busqueda').value=''; mostrarSugerencias();">
-        <button onclick="buscar()">Buscar</button>
+        <button type="button" onclick="buscar()" aria-label="Buscar edificio">Buscar</button>
     </div>
-    <ul id="sugerencias" aria-label="Sugerencias de edificios"></ul>
+    <ul id="sugerencias" role="listbox" aria-label="Sugerencias de edificios"></ul>
     <div style="display:flex; gap:6px; width:100%; flex-wrap: wrap;">
-        <button onclick="irAMiUbicacion()" title="Centrar en mi ubicación">📍 Mi ubicación</button>
-        <button class="secondary" id="toggle-puertas-btn" onclick="togglePuertas()" title="Mostrar/ocultar puertas de acceso">🚘 Mostrar Acceso</button>
+        <button type="button" onclick="irAMiUbicacion()" aria-label="Centrar mapa en mi ubicación" title="Centrar en mi ubicación (Ctrl+L)">📍 Mi ubicación</button>
+        <button type="button" class="secondary" id="toggle-puertas-btn" onclick="togglePuertas()" aria-label="Mostrar u ocultar puertas de acceso" title="Mostrar/ocultar puertas de acceso">🚘 Puertas</button>
+        <button type="button" class="secondary" id="btn-compartir" onclick="compartirEdificio()" aria-label="Compartir enlace del edificio seleccionado" title="Compartir edificio (Ctrl+Shift+C)" style="display:none;">🔗 Compartir</button>
     </div>
 </div>
 
-<div id="map"></div>
+<div id="map" role="application" aria-label="Mapa de edificios Demet Toreo"></div>
 
 <script>
     // 1. Configurar el mapa centrado en tu zona (Lomas de Sotelo)
@@ -249,6 +256,7 @@
     // Marcadores de edificios (solo para saber coordenadas)
     const markers = {};
     let marcadorEdificioActual = null;
+    let edificioSeleccionado = null;
 
     edificios.forEach(edif => {
         const marker = L.marker([edif.lat, edif.lng]);
@@ -399,6 +407,7 @@
         if (e.key === 'Escape') {
             ul.classList.remove('visible');
             document.getElementById('busqueda').blur();
+            limpiarEdificioSeleccionado();
         }
     }
 
@@ -415,6 +424,85 @@
         const latlng = baseMarker.getLatLng();
         marcadorEdificioActual = L.marker(latlng, { icon: crearIconoEdificio(nombre) }).addTo(map);
         map.setView(latlng, 19);
+
+        edificioSeleccionado = nombre;
+        document.title = nombre + " - Demet Toreo";
+        var btnCompartir = document.getElementById('btn-compartir');
+        if (btnCompartir) btnCompartir.style.display = 'inline-flex';
+        actualizarUrlEdificio(nombre);
+    }
+
+    function limpiarEdificioSeleccionado() {
+        if (marcadorEdificioActual && map.hasLayer(marcadorEdificioActual)) {
+            map.removeLayer(marcadorEdificioActual);
+            marcadorEdificioActual = null;
+        }
+        edificioSeleccionado = null;
+        document.title = "Buscador de Edificios - Demet Toreo";
+        var btnCompartir = document.getElementById('btn-compartir');
+        if (btnCompartir) btnCompartir.style.display = 'none';
+        actualizarUrlEdificio(null);
+    }
+
+    function actualizarUrlEdificio(nombre) {
+        var url = new URL(window.location.href);
+        if (nombre) {
+            url.searchParams.set('edificio', encodeURIComponent(nombre));
+        } else {
+            url.searchParams.delete('edificio');
+        }
+        var nuevaUrl = url.pathname + url.search;
+        window.history.replaceState({}, '', nuevaUrl);
+    }
+
+    function compartirEdificio() {
+        if (!edificioSeleccionado) return;
+        var url = window.location.origin + window.location.pathname + '?edificio=' + encodeURIComponent(edificioSeleccionado);
+        if (navigator.share && navigator.canShare && navigator.canShare({ url: url })) {
+            navigator.share({
+                title: edificioSeleccionado + ' - Demet Toreo',
+                text: 'Ver edificio en el mapa',
+                url: url
+            }).catch(function() { copiarAlPortapapeles(url); });
+        } else {
+            copiarAlPortapapeles(url);
+        }
+    }
+
+    function copiarAlPortapapeles(texto) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(texto).then(function() {
+                mostrarToast('Enlace copiado');
+            }).catch(function() { fallbackCopiar(texto); });
+        } else {
+            fallbackCopiar(texto);
+        }
+    }
+
+    function fallbackCopiar(texto) {
+        var ta = document.createElement('textarea');
+        ta.value = texto;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+            document.execCommand('copy');
+            mostrarToast('Enlace copiado');
+        } catch (e) {}
+        document.body.removeChild(ta);
+    }
+
+    function mostrarToast(mensaje) {
+        var t = document.getElementById('toast');
+        if (t) { t.remove(); }
+        t = document.createElement('div');
+        t.id = 'toast';
+        t.setAttribute('role', 'status');
+        t.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 16px;border-radius:8px;font-size:0.9rem;z-index:10000;animation:fadeIn 0.2s ease;';
+        t.textContent = mensaje;
+        document.body.appendChild(t);
+        setTimeout(function() { t.style.animation = 'fadeOut 0.2s ease forwards'; setTimeout(function() { t.remove(); }, 200); }, 2000);
     }
 
     function buscar() {
@@ -433,6 +521,37 @@
             document.getElementById('sugerencias').classList.remove('visible');
         }
     });
+
+    // Atajos de teclado globales
+    document.addEventListener('keydown', function(e) {
+        var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+        var enInput = (e.target && (e.target.id === 'busqueda' || tag === 'input' || tag === 'textarea'));
+        if (!enInput) {
+            if (e.key === '/' || (e.ctrlKey && e.key === 'k')) {
+                e.preventDefault();
+                document.getElementById('busqueda').focus();
+            }
+        }
+        if (e.ctrlKey && e.key === 'l') {
+            e.preventDefault();
+            irAMiUbicacion();
+        }
+        if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+            e.preventDefault();
+            if (edificioSeleccionado) compartirEdificio();
+        }
+    });
+
+    // Al cargar: si la URL tiene ?edificio=Nombre, ir a ese edificio
+    (function() {
+        var params = new URLSearchParams(window.location.search);
+        var q = params.get('edificio');
+        if (q) {
+            q = decodeURIComponent(q).trim().toLowerCase();
+            var ed = edificios.find(function(e) { return e.nombre.toLowerCase() === q; });
+            if (ed) irAEdificio(ed.nombre);
+        }
+    })();
 
     // 5. Geolocalización: marcador de "Mi ubicación"
     let marcadorUbicacion = null;
