@@ -81,6 +81,14 @@
             white-space: nowrap;
         }
 
+        .edificio-marker {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            transform: translate(-50%, -100%);
+            animation: edificio-bounce 1.1s ease-in-out infinite;
+        }
+
         .edificio-arrow {
             display: flex;
             align-items: center;
@@ -90,7 +98,18 @@
             font-size: 20px;
             color: #2bd168;
             text-shadow: 0 0 2px #ffffff;
-            animation: edificio-bounce 1.1s ease-in-out infinite;
+        }
+
+        .edificio-label {
+            margin-top: 2px;
+            padding: 2px 6px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            color: #1a1a1a;
+            font-size: 0.8rem;
+            font-weight: 600;
+            white-space: nowrap;
         }
 
         @keyframes edificio-bounce {
@@ -122,6 +141,7 @@
     <ul id="sugerencias" aria-label="Sugerencias de edificios"></ul>
     <div style="display:flex; gap:6px; width:100%; flex-wrap: wrap;">
         <button onclick="irAMiUbicacion()" title="Centrar en mi ubicación">📍 Mi ubicación</button>
+        <button class="secondary" id="toggle-puertas-btn" onclick="togglePuertas()" title="Mostrar/ocultar puertas de acceso">🚘 Puertas (OFF)</button>
     </div>
 </div>
 
@@ -234,13 +254,21 @@
         markers[edif.nombre.toLowerCase()] = marker;
     });
 
-    // Icono de flecha animada para el edificio seleccionado
-    const edificioArrowIcon = L.divIcon({
-        className: '',
-        html: '<div class="edificio-arrow">⬇</div>',
-        iconSize: [24, 24],
-        iconAnchor: [12, 24],
-    });
+    // Icono de flecha animada para el edificio seleccionado (incluye nombre)
+    function crearIconoEdificio(nombre) {
+        const safeName = nombre.replace(/"/g, '&quot;');
+        return L.divIcon({
+            className: '',
+            html: `
+                <div class="edificio-marker">
+                    <div class="edificio-label">${safeName}</div>
+                    <div class="edificio-arrow">⬇</div>
+                </div>
+            `,
+            iconSize: [24, 32],
+            iconAnchor: [12, 24],
+        });
+    }
 
     // 3.b Puertas de acceso (puntos) extraídas del KMZ
     const puertasPunto = [
@@ -253,6 +281,7 @@
     ];
 
     const puertaMarkers = [];
+    let mostrarPuertas = false;
 
     // Dibujar puntos de puertas con icono (Toreo I vs Toreo II diferenciados)
     puertasPunto.forEach(p => {
@@ -263,10 +292,10 @@
         const tipoToreo = (linea2 || '').toLowerCase().trim();
         const esToreoI = tipoToreo === 'toreo i';
 
-        // Badge con I / II y color distinto
+        // Icono de acceso vehicular (mismo símbolo, color distinto por conjunto)
         const badgeTexto = esToreoI ? 'Toreo I' : 'Toreo II';
         const badgeColor = esToreoI ? '#1a73e8' : '#34a853'; // azul / verde
-        const emoji = esToreoI ? '🏍️' : '🚗';
+        const emoji = '🚘';
 
         const carIcon = L.divIcon({
             className: '',
@@ -287,11 +316,11 @@
         puertaMarkers.push(markerPuerta);
     });
 
-    // Mostrar/ocultar puertas según el nivel de zoom:
-    // - visibles solo cuando el zoom está entre 17 y 18 (inclusive)
+    // Mostrar/ocultar puertas según el nivel de zoom y el toggle del usuario:
+    // - visibles solo cuando el zoom está entre 17 y 18 (inclusive) Y mostrarPuertas = true
     function actualizarVisibilidadPuertas() {
         const z = map.getZoom();
-        const visible = z >= 17 && z <= 18;
+        const visible = mostrarPuertas && z >= 17 && z <= 18;
 
         puertaMarkers.forEach(m => {
             if (visible) {
@@ -304,6 +333,19 @@
                 }
             }
         });
+    }
+
+    function togglePuertas() {
+        mostrarPuertas = !mostrarPuertas;
+        const btn = document.getElementById('toggle-puertas-btn');
+        if (btn) {
+            if (mostrarPuertas) {
+                btn.textContent = '🚘 Puertas (ON)';
+            } else {
+                btn.textContent = '🚘 Puertas (OFF)';
+            }
+        }
+        actualizarVisibilidadPuertas();
     }
 
     map.on('zoomend', actualizarVisibilidadPuertas);
@@ -369,7 +411,7 @@
         }
 
         const latlng = baseMarker.getLatLng();
-        marcadorEdificioActual = L.marker(latlng, { icon: edificioArrowIcon }).addTo(map);
+        marcadorEdificioActual = L.marker(latlng, { icon: crearIconoEdificio(nombre) }).addTo(map);
         map.setView(latlng, 19);
     }
 
