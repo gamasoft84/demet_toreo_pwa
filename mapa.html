@@ -80,6 +80,23 @@
             line-height: 1.1;
             white-space: nowrap;
         }
+
+        .edificio-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            font-size: 20px;
+            color: #2bd168;
+            text-shadow: 0 0 2px #ffffff;
+            animation: edificio-bounce 1.1s ease-in-out infinite;
+        }
+
+        @keyframes edificio-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
         .puerta-badge {
             display: inline-flex;
             align-items: center;
@@ -208,13 +225,21 @@
         // Los últimos puntos del KMZ son puertas, ya los manejamos en el array `puertas`
     ];
 
-    // Marcadores de edificios (se crean pero no se muestran al cargar)
+    // Marcadores de edificios (solo para saber coordenadas)
     const markers = {};
     let marcadorEdificioActual = null;
 
     edificios.forEach(edif => {
-        const marker = L.marker([edif.lat, edif.lng]).bindPopup(`<b>${edif.nombre}</b>`);
+        const marker = L.marker([edif.lat, edif.lng]);
         markers[edif.nombre.toLowerCase()] = marker;
+    });
+
+    // Icono de flecha animada para el edificio seleccionado
+    const edificioArrowIcon = L.divIcon({
+        className: '',
+        html: '<div class="edificio-arrow">⬇</div>',
+        iconSize: [24, 24],
+        iconAnchor: [12, 24],
     });
 
     // 3.b Puertas de acceso (puntos) extraídas del KMZ
@@ -335,18 +360,17 @@
 
     function irAEdificio(nombre) {
         const key = nombre.toLowerCase();
-        const marker = markers[key];
-        if (!marker) return;
+        const baseMarker = markers[key];
+        if (!baseMarker) return;
 
         // Ocultar marcador anterior si estaba visible
         if (marcadorEdificioActual && map.hasLayer(marcadorEdificioActual)) {
             map.removeLayer(marcadorEdificioActual);
         }
 
-        marcadorEdificioActual = marker;
-        marker.addTo(map);
-        map.setView(marker.getLatLng(), 19);
-        marker.openPopup();
+        const latlng = baseMarker.getLatLng();
+        marcadorEdificioActual = L.marker(latlng, { icon: edificioArrowIcon }).addTo(map);
+        map.setView(latlng, 19);
     }
 
     function buscar() {
