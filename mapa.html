@@ -59,6 +59,8 @@
             background: transparent;
             box-shadow: none;
             border: none;
+            /* Centrar icono+texto exactamente sobre la lat/lng */
+            transform: translate(-30%, 25%);
         }
         .puerta-car-marker .emoji {
             font-size: 1rem;
@@ -224,8 +226,9 @@
 
         // Toreo I: fondo ámbar y moto; Toreo II: fondo blanco y auto rojo
         const fondo = esToreoI
-            ? 'rgba(255, 243, 205, 0.95)'   // ámbar suave
-            : 'rgba(255, 255, 255, 0.9)';   // blanco
+            ? 'rgba(80, 140, 255, 0.95)'   // azul claro para Toreo I
+            : 'rgba(255, 255, 255, 0.9)';  // blanco para Toreo II
+        const textoColor = esToreoI ? '#ffffff' : '#1a73e8';
         const emoji = esToreoI ? '🏍️' : '🚗';
 
         const carIcon = L.divIcon({
@@ -233,7 +236,7 @@
             html: `
                 <div class="puerta-car-marker">
                     <span class="emoji">${emoji}</span>
-                    <div class="puerta-car-label" style="background:${fondo};">
+                    <div class="puerta-car-label" style="background:${fondo}; color:${textoColor};">
                         <span>${linea1}</span>
                         ${linea2 ? `<span>${linea2}</span>` : ''}
                     </div>
