@@ -215,6 +215,8 @@
         { nombre: "Puerta 1 - Toreo II", lat: 19.45792777, lng: -99.21442222 },
     ];
 
+    const puertaMarkers = [];
+
     // Dibujar puntos de puertas con icono (Toreo I vs Toreo II diferenciados)
     puertasPunto.forEach(p => {
         const partes = p.nombre.split(' - ');
@@ -246,8 +248,31 @@
             iconAnchor: [0, 0],
         });
 
-        L.marker([p.lat, p.lng], { icon: carIcon }).addTo(map);
+        const markerPuerta = L.marker([p.lat, p.lng], { icon: carIcon }).addTo(map);
+        puertaMarkers.push(markerPuerta);
     });
+
+    // Mostrar/ocultar puertas según el nivel de zoom:
+    // - visibles solo cuando el zoom está entre 17 y 18 (inclusive)
+    function actualizarVisibilidadPuertas() {
+        const z = map.getZoom();
+        const visible = z >= 17 && z <= 18;
+
+        puertaMarkers.forEach(m => {
+            if (visible) {
+                if (!map.hasLayer(m)) {
+                    m.addTo(map);
+                }
+            } else {
+                if (map.hasLayer(m)) {
+                    map.removeLayer(m);
+                }
+            }
+        });
+    }
+
+    map.on('zoomend', actualizarVisibilidadPuertas);
+    actualizarVisibilidadPuertas();
 
     // 4. Búsqueda (exacta o parcial) y sugerencias
     function edificiosCoincidentes(texto) {
