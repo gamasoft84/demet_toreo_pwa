@@ -5,7 +5,12 @@
     <title>Buscador de Edificios - Demet Toreo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="description" content="Mapa de edificios y puertas de acceso de Demet Toreo. Busca un edificio y ubica puertas de acceso vehicular." />
-    
+    <meta name="theme-color" content="#2b7cff" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Demet Toreo" />
+    <link rel="apple-touch-icon" href="icons/icon.svg" />
+    <link rel="manifest" href="manifest.json" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
@@ -606,6 +611,15 @@
     map.on('locationerror', function(e) {
         alert("No se pudo obtener tu ubicación. Revisa que hayas permitido el acceso a la ubicación en el navegador.");
     });
+
+    // PWA: registrar Service Worker para uso offline
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js', { scope: '/' }).then(function(reg) {
+            console.log('SW registrado:', reg.scope);
+        }).catch(function(err) {
+            console.warn('SW no registrado:', err);
+        });
+    }
 </script>
 
 </body>
