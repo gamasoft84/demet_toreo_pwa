@@ -59,8 +59,8 @@
             background: transparent;
             box-shadow: none;
             border: none;
-            /* Centrar icono+texto aproximadamente sobre la lat/lng */
-            transform: translate(-30%, 25%);
+            /* El centro del vehículo coincide con la coordenada de la puerta */
+            transform: translate(-50%, 0);
         }
         .puerta-car-marker .emoji {
             font-size: 1rem;
@@ -142,7 +142,7 @@
     <ul id="sugerencias" aria-label="Sugerencias de edificios"></ul>
     <div style="display:flex; gap:6px; width:100%; flex-wrap: wrap;">
         <button onclick="irAMiUbicacion()" title="Centrar en mi ubicación">📍 Mi ubicación</button>
-        <button class="secondary" id="toggle-puertas-btn" onclick="togglePuertas()" title="Mostrar/ocultar puertas de acceso">🚘 Puertas (OFF)</button>
+        <button class="secondary" id="toggle-puertas-btn" onclick="togglePuertas()" title="Mostrar/ocultar puertas de acceso">🚘 Mostrar Acceso</button>
     </div>
 </div>
 
@@ -342,9 +342,9 @@
         const btn = document.getElementById('toggle-puertas-btn');
         if (btn) {
             if (mostrarPuertas) {
-                btn.textContent = '🚘 Puertas (ON)';
+                btn.textContent = '🚘 Mostrar Acceso';
             } else {
-                btn.textContent = '🚘 Puertas (OFF)';
+                btn.textContent = '🚘 Ocultar Acceso';
             }
         }
         actualizarVisibilidadPuertas();
