@@ -364,6 +364,11 @@
     }
 
     map.on('zoomend', actualizarVisibilidadPuertas);
+    // Al cambiar vista Mapa/Satélite, reaplicar visibilidad de puertas en el siguiente frame
+    // para que no parezca que desaparecen (Leaflet puede redibujar y afectar overlays)
+    map.on('baselayerchange', function() {
+        requestAnimationFrame(actualizarVisibilidadPuertas);
+    });
     actualizarVisibilidadPuertas();
 
     // 4. Búsqueda (exacta o parcial) y sugerencias
