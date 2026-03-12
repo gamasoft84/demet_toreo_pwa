@@ -1,19 +1,26 @@
 // Service Worker - Demet Toreo PWA
 // Cache: app shell (página + Leaflet) para funcionar offline
+// Compatible con raíz (/) y subruta (ej. GitHub Pages: /demet_pwa/)
 
 const CACHE_NAME = 'demet-toreo-v1';
-const APP_SHELL = [
-  '/mapa.html',
-  '/manifest.json',
-  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
-  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
-];
+var BASE = self.location.pathname.replace(/[^/]*$/, ''); // '' si en raíz, '/demet_pwa/' si en subruta
+
+function appShellUrls() {
+  var origin = self.location.origin;
+  return [
+    origin + BASE + 'mapa.html',
+    origin + BASE + 'manifest.json',
+    'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
+    'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
+  ];
+}
 
 // Instalación: cachear app shell
 self.addEventListener('install', function (event) {
+  var urls = appShellUrls();
   event.waitUntil(
     caches.open(CACHE_NAME).then(function (cache) {
-      return cache.addAll(APP_SHELL.map(function (url) {
+      return cache.addAll(urls.map(function (url) {
         return new Request(url, { mode: 'cors' });
       })).catch(function (err) {
         console.warn('SW install: no se pudo cachear algún recurso', err);
@@ -43,16 +50,16 @@ self.addEventListener('fetch', function (event) {
   var pathname = '';
   try { pathname = new URL(url).pathname; } catch (e) {}
 
-  // Navegación a mapa.html (con o sin query) → usar misma clave de cache
-  var isMapa = event.request.mode === 'navigate' && pathname && (pathname === '/mapa.html' || pathname.endsWith('/mapa.html'));
+  var base = BASE || '/';
+  var isMapa = event.request.mode === 'navigate' && pathname && (pathname === base + 'mapa.html' || pathname.endsWith('/mapa.html'));
   var isLeaflet = url.indexOf('leaflet') >= 0 && (url.endsWith('.css') || url.endsWith('.js'));
-  var isManifest = pathname === '/manifest.json' || pathname.endsWith('/manifest.json');
+  var isManifest = pathname === base + 'manifest.json' || pathname.endsWith('/manifest.json');
   var isAppShell = isMapa || isLeaflet || isManifest;
 
   if (isAppShell) {
     var cacheKey = event.request;
     if (isMapa) {
-      cacheKey = new Request(new URL(event.request.url).origin + '/mapa.html');
+      cacheKey = new Request(new URL(event.request.url).origin + base + 'mapa.html');
     }
     event.respondWith(
       caches.match(cacheKey).then(function (cached) {
