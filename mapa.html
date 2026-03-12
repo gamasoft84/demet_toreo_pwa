@@ -59,7 +59,7 @@
             background: transparent;
             box-shadow: none;
             border: none;
-            /* Centrar icono+texto exactamente sobre la lat/lng */
+            /* Centrar icono+texto aproximadamente sobre la lat/lng */
             transform: translate(-30%, 25%);
         }
         .puerta-car-marker .emoji {
@@ -71,7 +71,7 @@
             align-items: center;
             padding: 2px 6px;
             border-radius: 6px;
-            /* El color de fondo se define por puerta en el HTML inline */
+            background: rgba(255, 255, 255, 0.9);
             box-shadow: 0 1px 3px rgba(0,0,0,0.35);
             color: #1a73e8; /* azul tipo Google Maps */
             font-size: 0.8rem;
@@ -79,6 +79,18 @@
             text-align: center;
             line-height: 1.1;
             white-space: nowrap;
+        }
+        .puerta-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 1px;
+            padding: 1px 6px;
+            border-radius: 999px;
+            background: #1a73e8;
+            color: #ffffff;
+            font-size: 0.7rem;
+            font-weight: 700;
         }
     </style>
 </head>
@@ -226,11 +238,9 @@
         const tipoToreo = (linea2 || '').toLowerCase().trim();
         const esToreoI = tipoToreo === 'toreo i';
 
-        // Toreo I: fondo ámbar y moto; Toreo II: fondo blanco y auto rojo
-        const fondo = esToreoI
-            ? 'rgba(80, 140, 255, 0.95)'   // azul claro para Toreo I
-            : 'rgba(255, 255, 255, 0.9)';  // blanco para Toreo II
-        const textoColor = esToreoI ? '#ffffff' : '#1a73e8';
+        // Badge con I / II y color distinto
+        const badgeTexto = esToreoI ? 'Toreo I' : 'Toreo II';
+        const badgeColor = esToreoI ? '#1a73e8' : '#34a853'; // azul / verde
         const emoji = esToreoI ? '🏍️' : '🚗';
 
         const carIcon = L.divIcon({
@@ -238,9 +248,9 @@
             html: `
                 <div class="puerta-car-marker">
                     <span class="emoji">${emoji}</span>
-                    <div class="puerta-car-label" style="background:${fondo}; color:${textoColor};">
+                    <div class="puerta-car-label">
                         <span>${linea1}</span>
-                        ${linea2 ? `<span>${linea2}</span>` : ''}
+                        <span class="puerta-badge" style="background:${badgeColor};">${badgeTexto}</span>
                     </div>
                 </div>
             `,
