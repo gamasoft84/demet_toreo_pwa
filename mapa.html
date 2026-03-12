@@ -447,7 +447,8 @@
     function actualizarUrlEdificio(nombre) {
         var url = new URL(window.location.href);
         if (nombre) {
-            url.searchParams.set('edificio', encodeURIComponent(nombre));
+            // URLSearchParams ya se encarga de la codificación
+            url.searchParams.set('edificio', nombre);
         } else {
             url.searchParams.delete('edificio');
         }
@@ -458,14 +459,19 @@
     function compartirEdificio() {
         if (!edificioSeleccionado) return;
         var url = window.location.origin + window.location.pathname + '?edificio=' + encodeURIComponent(edificioSeleccionado);
+
+        // Siempre aseguramos que lo que se copia al portapapeles sea SOLO la URL limpia
+        copiarAlPortapapeles(url);
+
+        // Si hay API de compartir, la usamos adicionalmente (pero ya copiamos la URL correcta)
         if (navigator.share && navigator.canShare && navigator.canShare({ url: url })) {
             navigator.share({
                 title: edificioSeleccionado + ' - Demet Toreo',
                 text: 'Ver edificio en el mapa',
                 url: url
-            }).catch(function() { copiarAlPortapapeles(url); });
-        } else {
-            copiarAlPortapapeles(url);
+            }).catch(function() {
+                // Si falla el share, al menos ya está copiada la URL
+            });
         }
     }
 
@@ -542,15 +548,19 @@
         }
     });
 
-    // Al cargar: si la URL tiene ?edificio=Nombre, ir a ese edificio
+    // Al cargar: si la URL tiene ?edificio=Nombre, ir a ese edificio (cuando el mapa esté listo)
     (function() {
         var params = new URLSearchParams(window.location.search);
         var q = params.get('edificio');
-        if (q) {
-            q = decodeURIComponent(q).trim().toLowerCase();
-            var ed = edificios.find(function(e) { return e.nombre.toLowerCase() === q; });
-            if (ed) irAEdificio(ed.nombre);
-        }
+        if (!q) return;
+
+        var nombreBuscado = q.trim().toLowerCase();
+        var ed = edificios.find(function(e) { return e.nombre.toLowerCase() === nombreBuscado; });
+        if (!ed) return;
+
+        map.whenReady(function() {
+            irAEdificio(ed.nombre);
+        });
     })();
 
     // 5. Geolocalización: marcador de "Mi ubicación"
