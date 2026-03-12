@@ -59,14 +59,24 @@
             background: transparent;
             box-shadow: none;
             border: none;
+        }
+        .puerta-car-marker .emoji {
+            font-size: 1rem;
+        }
+        .puerta-car-label {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2px 6px;
+            border-radius: 6px;
+            /* El color de fondo se define por puerta en el HTML inline */
+            box-shadow: 0 1px 3px rgba(0,0,0,0.35);
             color: #1a73e8; /* azul tipo Google Maps */
             font-size: 0.8rem;
             font-weight: 600;
             text-align: center;
             line-height: 1.1;
-        }
-        .puerta-car-marker .emoji {
-            font-size: 1rem;
+            white-space: nowrap;
         }
     </style>
 </head>
@@ -195,26 +205,38 @@
 
     // 3.b Puertas de acceso (puntos) extraídas del KMZ
     const puertasPunto = [
-        { nombre: "Puerta 3 - Toreo I", lat: 19.45581988, lng: -99.21202550 },
+        { nombre: "Puerta 1 - Toreo I", lat: 19.456297, lng: -99.213328 },
         { nombre: "Puerta 2 - Toreo I", lat: 19.45602920, lng: -99.21269535 },
+        { nombre: "Puerta 3 - Toreo I", lat: 19.45581988, lng: -99.21202550 },
+        { nombre: "Puerta 4 - Toreo I", lat: 19.45666436, lng: -99.21043991 },
         { nombre: "Puerta 2 - Toreo II", lat: 19.45657398, lng: -99.21424090 },
         { nombre: "Puerta 1 - Toreo II", lat: 19.45792777, lng: -99.21442222 },
-        { nombre: "Puerta 4 - Toreo II", lat: 19.45666436, lng: -99.21043991 },
     ];
 
-    // Dibujar puntos de puertas con icono de auto (incluye Toreo I y Toreo II)
+    // Dibujar puntos de puertas con icono (Toreo I vs Toreo II diferenciados)
     puertasPunto.forEach(p => {
         const partes = p.nombre.split(' - ');
-        const linea1 = partes[1] || '';
-        const linea2 = partes[0] || '';
+        const linea1 = partes[0] || '';
+        const linea2 = partes[1] || '';
+
+        const tipoToreo = (linea2 || '').toLowerCase().trim();
+        const esToreoI = tipoToreo === 'toreo i';
+
+        // Toreo I: fondo ámbar y moto; Toreo II: fondo blanco y auto rojo
+        const fondo = esToreoI
+            ? 'rgba(255, 243, 205, 0.95)'   // ámbar suave
+            : 'rgba(255, 255, 255, 0.9)';   // blanco
+        const emoji = esToreoI ? '🏍️' : '🚗';
 
         const carIcon = L.divIcon({
             className: '',
             html: `
                 <div class="puerta-car-marker">
-                    <span class="emoji">🚗</span>
-                    <span style="white-space:nowrap;">${linea1}</span>
-                    ${linea2 ? `<span style="white-space:nowrap;">${linea2}</span>` : ''}
+                    <span class="emoji">${emoji}</span>
+                    <div class="puerta-car-label" style="background:${fondo};">
+                        <span>${linea1}</span>
+                        ${linea2 ? `<span>${linea2}</span>` : ''}
+                    </div>
                 </div>
             `,
             iconSize: [0, 0],
