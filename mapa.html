@@ -13,6 +13,11 @@
     <link rel="apple-touch-icon" href="icons/icon-192.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
     <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Demet Toreo - Mapa de Edificios" />
+    <meta property="og:description" content="Busca edificios y puertas de acceso en Demet Toreo. Mapa interactivo con geolocalización." />
+    <meta property="og:image" content="icons/icon-512.png" />
+    <meta property="og:locale" content="es_MX" />
     <link rel="manifest" href="manifest.json" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -210,6 +215,7 @@
     <div style="display:flex; gap:6px; width:100%; flex-wrap: wrap;">
         <button type="button" onclick="irAMiUbicacion()" aria-label="Centrar mapa en mi ubicación" title="Centrar en mi ubicación (Ctrl+L)">📍 Mi ubicación</button>
         <button type="button" class="secondary" id="btn-compartir" onclick="compartirEdificio()" aria-label="Compartir enlace del edificio seleccionado" title="Compartir edificio (Ctrl+Shift+C)" style="display:none;">🔗 Compartir</button>
+        <button type="button" class="secondary" id="btn-llegar" onclick="comoLlegar()" aria-label="Abrir navegación al edificio" title="Cómo llegar al edificio" style="display:none;">🧭 Cómo llegar</button>
         <button type="button" class="secondary" id="toggle-puertas-btn" onclick="togglePuertas()" aria-label="Mostrar u ocultar puertas de acceso" title="Mostrar/ocultar puertas de acceso">🚘 Mostrar Accesos</button>
     </div>
 </div>
@@ -428,7 +434,9 @@
         edificioSeleccionado = nombre;
         document.title = nombre + " - Demet Toreo";
         var btnCompartir = document.getElementById('btn-compartir');
+        var btnLlegar = document.getElementById('btn-llegar');
         if (btnCompartir) btnCompartir.style.display = 'inline-flex';
+        if (btnLlegar) btnLlegar.style.display = 'inline-flex';
         actualizarUrlEdificio(nombre);
     }
 
@@ -440,7 +448,9 @@
         edificioSeleccionado = null;
         document.title = "Buscador de Edificios - Demet Toreo";
         var btnCompartir = document.getElementById('btn-compartir');
+        var btnLlegar = document.getElementById('btn-llegar');
         if (btnCompartir) btnCompartir.style.display = 'none';
+        if (btnLlegar) btnLlegar.style.display = 'none';
         actualizarUrlEdificio(null);
     }
 
@@ -472,6 +482,21 @@
             }).catch(function() {
                 // Si falla el share, al menos ya está copiada la URL
             });
+        }
+    }
+
+    function comoLlegar() {
+        if (!edificioSeleccionado) return;
+        var key = edificioSeleccionado.toLowerCase();
+        var baseMarker = markers[key];
+        if (!baseMarker) return;
+        var ll = baseMarker.getLatLng();
+        var destino = ll.lat + ',' + ll.lng;
+        var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        if (isIOS) {
+            window.open('https://maps.apple.com/?daddr=' + destino + '&dirflg=d', '_blank');
+        } else {
+            window.open('https://www.google.com/maps/dir/?api=1&destination=' + destino + '&travelmode=driving', '_blank');
         }
     }
 
