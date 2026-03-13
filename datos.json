@@ -26,7 +26,6 @@
     { "nombre": "Quito", "lat": 19.45800980, "lng": -99.21421493 },
     { "nombre": "Caracas", "lat": 19.45791033, "lng": -99.21391130 },
     { "nombre": "San Salvador", "lat": 19.45787321, "lng": -99.21381117 },
-    { "nombre": "San Salvador 2", "lat": 19.45777320, "lng": -99.21349515 },
     { "nombre": "Montevideo", "lat": 19.45773408, "lng": -99.21338628 },
     { "nombre": "Toronto", "lat": 19.45764745, "lng": -99.21307275 },
     { "nombre": "Otawa", "lat": 19.45761091, "lng": -99.21297451 },

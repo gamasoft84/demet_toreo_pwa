@@ -250,11 +250,13 @@ function comoLlegar() {
     var ll = baseMarker.getLatLng();
     var destino = ll.lat + ',' + ll.lng;
     var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    var url;
     if (isIOS) {
-        window.open('https://maps.apple.com/?daddr=' + destino + '&dirflg=d', '_blank');
+        url = 'maps://?daddr=' + destino + '&dirflg=d';
     } else {
-        window.open('https://www.google.com/maps/dir/?api=1&destination=' + destino + '&travelmode=driving', '_blank');
+        url = 'https://www.google.com/maps/dir/?api=1&destination=' + destino + '&travelmode=driving';
     }
+    location.href = url;
 }
 
 function distanciaEntre(lat1, lng1, lat2, lng2) {
