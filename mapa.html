@@ -13,6 +13,7 @@
     <link rel="manifest" href="manifest.json" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate.js"></script>
     
     <style>
         * { box-sizing: border-box; }
@@ -159,10 +160,16 @@
 </div>
 
 <div id="map" role="application" aria-label="Mapa de edificios Demet Toreo"></div>
+<div id="version-badge" style="position:fixed;bottom:6px;right:6px;z-index:1000;background:rgba(0,0,0,0.45);color:#fff;padding:2px 8px;border-radius:6px;font-size:0.7rem;pointer-events:none;"></div>
 
 <script>
     // 1. Configurar el mapa centrado en tu zona (Lomas de Sotelo)
-    const map = L.map('map').setView([19.45711, -99.21237], 17);
+    const map = L.map('map', {
+        rotate: true,
+        touchRotate: true,
+        shiftKeyRotate: true,
+        rotateControl: { closeOnZeroBearing: false },
+    }).setView([19.45711, -99.21237], 17);
 
     // 2. Capas: callejero y satélite
     const mapaCalles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -620,12 +627,28 @@
         alert("No se pudo obtener tu ubicación. Revisa que hayas permitido el acceso a la ubicación en el navegador.");
     });
 
-    // PWA: registrar Service Worker para uso offline
+    // PWA: registrar Service Worker para uso offline y mostrar versión
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js', { scope: './' }).then(function(reg) {
             console.log('SW registrado:', reg.scope);
+            // Pedir versión al SW cuando esté activo
+            function pedirVersion(sw) {
+                sw.postMessage({ type: 'GET_VERSION' });
+            }
+            if (navigator.serviceWorker.controller) {
+                pedirVersion(navigator.serviceWorker.controller);
+            }
+            navigator.serviceWorker.addEventListener('controllerchange', function() {
+                if (navigator.serviceWorker.controller) pedirVersion(navigator.serviceWorker.controller);
+            });
         }).catch(function(err) {
             console.warn('SW no registrado:', err);
+        });
+        navigator.serviceWorker.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'VERSION') {
+                var badge = document.getElementById('version-badge');
+                if (badge) badge.textContent = 'v' + event.data.version;
+            }
         });
     }
 </script>

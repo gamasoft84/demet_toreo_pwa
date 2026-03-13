@@ -2,7 +2,8 @@
 // Cache: app shell (página + Leaflet) para funcionar offline
 // Compatible con raíz (/) y subruta (ej. GitHub Pages: /demet_pwa/)
 
-const CACHE_NAME = 'demet-toreo-v1.0.4';
+const APP_VERSION = '1.0.5';
+const CACHE_NAME = 'demet-toreo-v' + APP_VERSION;
 var BASE = self.location.pathname.replace(/[^/]*$/, ''); // '' si en raíz, '/demet_pwa/' si en subruta
 
 function appShellUrls() {
@@ -11,7 +12,8 @@ function appShellUrls() {
     origin + BASE + 'mapa.html',
     origin + BASE + 'manifest.json',
     'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
-    'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
+    'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+    'https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate.js'
   ];
 }
 
@@ -29,6 +31,13 @@ self.addEventListener('install', function (event) {
       return self.skipWaiting();
     })
   );
+});
+
+// Responder con la versión cuando la página la pida
+self.addEventListener('message', function (event) {
+  if (event.data && event.data.type === 'GET_VERSION') {
+    event.source.postMessage({ type: 'VERSION', version: APP_VERSION });
+  }
 });
 
 // Activación: tomar control y limpiar caches antiguos
