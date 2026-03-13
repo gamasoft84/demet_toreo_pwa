@@ -41,22 +41,13 @@
         <button type="button" class="btn-icon btn-ubicacion" onclick="irAMiUbicacion()" aria-label="Mi ubicación" title="Mi ubicación (Ctrl+L)">📍</button>
     </div>
     <ul id="sugerencias" role="listbox" aria-label="Sugerencias de edificios"></ul>
-    <div id="toolbar-general" class="toolbar">
-        <button type="button" class="secondary" id="toggle-puertas-btn" onclick="togglePuertas()" aria-label="Mostrar u ocultar puertas de acceso" title="Mostrar/ocultar puertas de acceso">
-            <span class="btn-emoji">🚘</span><span class="btn-label">Mostrar Accesos</span>
-        </button>
-    </div>
     <div id="toolbar-edificio" class="toolbar toolbar-edificio" style="display:none;">
-        <span id="edificio-nombre" class="edificio-nombre-tag"></span>
-        <div class="toolbar-actions">
-            <button type="button" class="secondary" id="btn-compartir" onclick="compartirEdificio()" aria-label="Compartir enlace" title="Compartir (Ctrl+Shift+C)">
-                <span class="btn-emoji">🔗</span><span class="btn-label">Compartir</span>
-            </button>
-            <button type="button" class="secondary" id="btn-llegar" onclick="comoLlegar()" aria-label="Cómo llegar" title="Cómo llegar">
-                <span class="btn-emoji">🧭</span><span class="btn-label">Cómo llegar</span>
-            </button>
-            <button type="button" class="btn-cerrar" id="btn-cerrar" onclick="limpiarEdificioSeleccionado(); document.getElementById('busqueda').value='';" aria-label="Cerrar selección" title="Cerrar">✕</button>
-        </div>
+        <button type="button" class="secondary" id="btn-compartir" onclick="compartirEdificio()" aria-label="Compartir enlace" title="Compartir (Ctrl+Shift+C)">
+            <span class="btn-emoji">🔗</span><span class="btn-label">Compartir</span>
+        </button>
+        <button type="button" class="secondary" id="btn-llegar" onclick="comoLlegar()" aria-label="Cómo llegar" title="Cómo llegar">
+            <span class="btn-emoji">🧭</span><span class="btn-label">Cómo llegar</span>
+        </button>
     </div>
 </div>
 

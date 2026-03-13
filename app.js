@@ -31,7 +31,6 @@ var marcadorEdificioActual = null;
 var edificioSeleccionado = null;
 var puertaMarkers = [];
 var puertasDatos = [];
-var mostrarPuertas = false;
 
 function crearIconoEdificio(nombre) {
     var safeName = nombre.replace(/"/g, '&quot;');
@@ -102,10 +101,9 @@ fetch('datos.json')
         ocultarSplash();
     });
 
-// Mostrar/ocultar puertas según el nivel de zoom y el toggle del usuario
 function actualizarVisibilidadPuertas() {
     var z = map.getZoom();
-    var visible = mostrarPuertas && z >= 17 && z <= 18;
+    var visible = z >= 17 && z <= 18;
 
     puertaMarkers.forEach(function(m) {
         if (visible) {
@@ -114,23 +112,6 @@ function actualizarVisibilidadPuertas() {
             if (map.hasLayer(m)) map.removeLayer(m);
         }
     });
-    var toolbar = document.getElementById('toolbar-general');
-    if (toolbar) toolbar.style.display = (z >= 17 && z <= 18) ? '' : 'none';
-}
-
-function togglePuertas() {
-    mostrarPuertas = !mostrarPuertas;
-    actualizarLeyendaPuertas();
-    actualizarVisibilidadPuertas();
-}
-
-function actualizarLeyendaPuertas() {
-    var btn = document.getElementById('toggle-puertas-btn');
-    if (!btn) return;
-    var label = btn.querySelector('.btn-label');
-    if (label) {
-        label.textContent = mostrarPuertas ? 'Ocultar Accesos' : 'Mostrar Accesos';
-    }
 }
 
 map.on('zoomend', actualizarVisibilidadPuertas);
@@ -202,9 +183,7 @@ function irAEdificio(nombre) {
     edificioSeleccionado = nombre;
     document.title = nombre + ' - Demet Toreo';
     var toolbarEdificio = document.getElementById('toolbar-edificio');
-    var nombreTag = document.getElementById('edificio-nombre');
     if (toolbarEdificio) toolbarEdificio.style.display = 'flex';
-    if (nombreTag) nombreTag.textContent = nombre;
     actualizarUrlEdificio(nombre);
 
     var cercana = puertaMasCercana(latlng.lat, latlng.lng);

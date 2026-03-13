@@ -69,23 +69,7 @@ button.secondary:hover { background: #e4e4e4; }
     gap: 8px;
     animation: fadeIn 0.2s ease;
 }
-.edificio-nombre-tag {
-    font-weight: 600; font-size: 0.85rem; color: #2b7cff;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    flex: 1; min-width: 0;
-}
-.toolbar-actions {
-    display: flex; gap: 5px; align-items: center; flex-shrink: 0;
-}
 
-/* Botón cerrar selección */
-.btn-cerrar {
-    padding: 4px 8px; min-width: 28px; min-height: 28px;
-    background: transparent; color: #888;
-    font-size: 1rem; line-height: 1;
-    border-radius: 8px; justify-content: center;
-}
-.btn-cerrar:hover { background: #e8e8e8; color: #333; }
 
 /* Emoji + label dentro de botones */
 .btn-emoji { font-size: 1rem; line-height: 1; flex-shrink: 0; }
@@ -114,7 +98,7 @@ button.secondary:hover { background: #e4e4e4; }
     .btn-label { display: none; }
     button.secondary { padding: 7px 10px; }
     .toolbar-edificio { padding: 6px 8px; }
-    .edificio-nombre-tag { font-size: 0.8rem; }
+
 }
 
 /* ── DESKTOP: labels visibles, más espaciado ── */
@@ -159,10 +143,8 @@ button.secondary:hover { background: #e4e4e4; }
     button.secondary:hover { background: #4a4a60; }
     .btn-ubicacion { background: #3a3a50; color: #ccc; }
     .btn-ubicacion:hover { background: #4a4a60; }
-    .btn-cerrar { color: #888; }
-    .btn-cerrar:hover { background: #3a3a50; color: #e0e0e0; }
     .toolbar-edificio { background: #2a2a44; }
-    .edificio-nombre-tag { color: #7ab4ff; }
+
     #sugerencias { background: #2a2a3e; border-color: #444; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
     #sugerencias li { color: #e0e0e0; }
     #sugerencias li:hover, #sugerencias li.focused { background: #3a3a55; }
