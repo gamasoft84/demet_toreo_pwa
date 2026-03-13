@@ -2,7 +2,7 @@
 // Cache: app shell (página + Leaflet) para funcionar offline
 // Compatible con raíz (/) y subruta (ej. GitHub Pages: /demet_pwa/)
 
-const APP_VERSION = '1.0.6';
+const APP_VERSION = '1.0.7';
 const CACHE_NAME = 'demet-toreo-v' + APP_VERSION;
 var BASE = self.location.pathname.replace(/[^/]*$/, ''); // '' si en raíz, '/demet_pwa/' si en subruta
 
@@ -11,6 +11,7 @@ function appShellUrls() {
   return [
     origin + BASE + 'mapa.html',
     origin + BASE + 'manifest.json',
+    origin + BASE + 'datos.json',
     'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
     'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
     'https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate.js'
@@ -63,7 +64,8 @@ self.addEventListener('fetch', function (event) {
   var isMapa = event.request.mode === 'navigate' && pathname && (pathname === base + 'mapa.html' || pathname.endsWith('/mapa.html'));
   var isLeaflet = url.indexOf('leaflet') >= 0 && (url.endsWith('.css') || url.endsWith('.js'));
   var isManifest = pathname === base + 'manifest.json' || pathname.endsWith('/manifest.json');
-  var isAppShell = isMapa || isLeaflet || isManifest;
+  var isDatos = pathname === base + 'datos.json' || pathname.endsWith('/datos.json');
+  var isAppShell = isMapa || isLeaflet || isManifest || isDatos;
 
   if (isAppShell) {
     var cacheKey = event.request;

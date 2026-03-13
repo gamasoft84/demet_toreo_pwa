@@ -3,13 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <title>Buscador de Edificios - Demet Toreo</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="description" content="Mapa de edificios y puertas de acceso de Demet Toreo. Busca un edificio y ubica puertas de acceso vehicular." />
-    <meta name="theme-color" content="#2b7cff" />
+    <meta name="theme-color" content="#2b7cff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1a1a2e" media="(prefers-color-scheme: dark)" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Demet Toreo" />
     <link rel="apple-touch-icon" href="icons/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
     <link rel="manifest" href="manifest.json" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -20,7 +23,11 @@
         body { margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; color: #1a1a1a; }
         #map { height: 100vh; width: 100vw; }
         #search-container {
-            position: absolute; top: 12px; left: 12px; right: 12px; z-index: 1000;
+            position: absolute;
+            top: calc(12px + env(safe-area-inset-top, 0px));
+            left: calc(12px + env(safe-area-inset-left, 0px));
+            right: calc(12px + env(safe-area-inset-right, 0px));
+            z-index: 1000;
             max-width: 420px;
             background: rgba(255,255,255,0.96); padding: 12px; border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.12);
@@ -30,6 +37,7 @@
         input {
             padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 8px;
             font-size: 0.95rem; flex: 1; min-width: 0;
+            background: #fff; color: #1a1a1a;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
         input:focus { outline: none; border-color: #2b7cff; box-shadow: 0 0 0 3px rgba(43,124,255,0.2); }
@@ -54,10 +62,51 @@
         #sugerencias.visible { display: block; }
         #sugerencias li {
             padding: 10px 12px; cursor: pointer; border-radius: 6px;
-            font-size: 0.9rem;
+            font-size: 0.9rem; color: #1a1a1a;
         }
         #sugerencias li:hover, #sugerencias li.focused { background: #f0f4ff; }
         .leaflet-control-layers { border-radius: 8px !important; overflow: hidden; }
+
+        /* Splash screen */
+        #splash {
+            position: fixed; inset: 0; z-index: 9999;
+            background: #2b7cff;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 16px;
+            transition: opacity 0.4s ease;
+        }
+        #splash.fade-out { opacity: 0; pointer-events: none; }
+        #splash img { width: 96px; height: 96px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.25); }
+        #splash .splash-title { color: #fff; font-size: 1.3rem; font-weight: 600; }
+        #splash .splash-dots { display: flex; gap: 6px; }
+        #splash .splash-dots span {
+            width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.5);
+            animation: dot-pulse 1.2s ease-in-out infinite;
+        }
+        #splash .splash-dots span:nth-child(2) { animation-delay: 0.2s; }
+        #splash .splash-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes dot-pulse { 0%,80%,100% { opacity: 0.3; } 40% { opacity: 1; } }
+
+        /* Dark mode */
+        @media (prefers-color-scheme: dark) {
+            body { color: #e0e0e0; }
+            #search-container {
+                background: rgba(30,30,46,0.96);
+                box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            }
+            input { background: #2a2a3e; color: #e0e0e0; border-color: #444; }
+            input::placeholder { color: #999; }
+            input:focus { border-color: #5a9cff; box-shadow: 0 0 0 3px rgba(90,156,255,0.3); }
+            button { background: #3b8cff; }
+            button:hover { background: #2a7ae6; }
+            button.secondary { background: #3a3a50; color: #ccc; }
+            button.secondary:hover { background: #4a4a60; }
+            #sugerencias { background: #2a2a3e; border-color: #444; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+            #sugerencias li { color: #e0e0e0; }
+            #sugerencias li:hover, #sugerencias li.focused { background: #3a3a55; }
+            .leaflet-control-layers { background: rgba(30,30,46,0.96) !important; color: #e0e0e0 !important; }
+            #splash { background: #1a1a2e; }
+        }
 
         .puerta-car-marker {
             display: inline-flex;
@@ -144,6 +193,12 @@
 </head>
 <body>
 
+<div id="splash">
+    <img src="icons/icon-192.png" alt="Demet Toreo" />
+    <span class="splash-title">Demet Toreo</span>
+    <div class="splash-dots"><span></span><span></span><span></span></div>
+</div>
+
 <div id="search-container" role="search" aria-label="Buscar edificio en el mapa">
     <div class="search-row">
         <input type="text" id="busqueda" placeholder="Buscar edificio..." autocomplete="off"
@@ -187,156 +242,81 @@
         { collapsed: false }
     ).addTo(map);
 
-    // 3. Edificios (leídos en este momento desde Demet Toreo.kmz)
-    const edificios = [
-        { nombre: "Hamburgo", lat: 19.45736491, lng: -99.21446269 },
-        { nombre: "Eslovaquía", lat: 19.45712396, lng: -99.21388754 },
-        { nombre: "Managua", lat: 19.45730479, lng: -99.21313001 },
-        { nombre: "Monaco", lat: 19.45655822, lng: -99.21230318 },
-        { nombre: "Roma", lat: 19.45705596, lng: -99.21110982 },
-        { nombre: "Dacca", lat: 19.45745261, lng: -99.21441947 },
-        { nombre: "Washington", lat: 19.45773543, lng: -99.21431875 },
-        { nombre: "Brasilia", lat: 19.45765098, lng: -99.21401985 },
-        { nombre: "Yokohama", lat: 19.45736515, lng: -99.21413004 },
-        { nombre: "Guatemala", lat: 19.45725558, lng: -99.21417263 },
-        { nombre: "Tunez", lat: 19.45753809, lng: -99.21376928 },
-        { nombre: "Singapur", lat: 19.45722302, lng: -99.21385309 },
-        { nombre: "Honolulú", lat: 19.45682889, lng: -99.21399652 },
-        { nombre: "Camberra", lat: 19.45673251, lng: -99.21404116 },
-        { nombre: "Minesota", lat: 19.45742185, lng: -99.21344430 },
-        { nombre: "Siria", lat: 19.45711085, lng: -99.21354695 },
-        { nombre: "Sofia", lat: 19.45701051, lng: -99.21359516 },
-        { nombre: "El cabo", lat: 19.45671868, lng: -99.21368868 },
-        { nombre: "Ankara", lat: 19.45662600, lng: -99.21374032 },
-        { nombre: "Panama", lat: 19.45696044, lng: -99.21325311 },
-        { nombre: "San Jose", lat: 19.45688693, lng: -99.21330807 },
-        { nombre: "Habana", lat: 19.45658920, lng: -99.21340888 },
-        { nombre: "Kingston", lat: 19.45648659, lng: -99.21345269 },
-        { nombre: "Quito", lat: 19.45800980, lng: -99.21421493 },
-        { nombre: "Caracas", lat: 19.45791033, lng: -99.21391130 },
-        { nombre: "San Salvador", lat: 19.45787321, lng: -99.21381117 },
-        { nombre: "San Salvador 2", lat: 19.45777320, lng: -99.21349515 },
-        { nombre: "Montevideo", lat: 19.45773408, lng: -99.21338628 },
-        { nombre: "Toronto", lat: 19.45764745, lng: -99.21307275 },
-        { nombre: "Otawa", lat: 19.45761091, lng: -99.21297451 },
-        { nombre: "Nueva York", lat: 19.45750662, lng: -99.21266604 },
-        { nombre: "Tegucigalpa", lat: 19.45778965, lng: -99.21255883 },
-        { nombre: "Buenos Aires", lat: 19.45788862, lng: -99.21285399 },
-        { nombre: "Cairo", lat: 19.45793451, lng: -99.21295737 },
-        { nombre: "Tripoli", lat: 19.45804216, lng: -99.21328051 },
-        { nombre: "Luanda", lat: 19.45805193, lng: -99.21338161 },
-        { nombre: "Asuncion", lat: 19.45817979, lng: -99.21370242 },
-        { nombre: "Bogota", lat: 19.45819735, lng: -99.21380516 },
-        { nombre: "Santo Domingo", lat: 19.45831083, lng: -99.21410941 },
-        { nombre: "Saigón", lat: 19.45687019, lng: -99.21292082 },
-        { nombre: "Bombay", lat: 19.45666542, lng: -99.21267110 },
-        { nombre: "Pekin", lat: 19.45677152, lng: -99.21262063 },
-        { nombre: "Teheran", lat: 19.45638073, lng: -99.21276319 },
-        { nombre: "Mexico", lat: 19.45627248, lng: -99.21280705 },
-        { nombre: "Taipei", lat: 19.45676941, lng: -99.21296756 },
-        { nombre: "Tokio", lat: 19.45647536, lng: -99.21307975 },
-        { nombre: "San Juan", lat: 19.45637260, lng: -99.21310304 },
-        { nombre: "Yakarta", lat: 19.45666137, lng: -99.21226144 },
-        { nombre: "Manila", lat: 19.45625676, lng: -99.21239775 },
-        { nombre: "Nueva Delhi", lat: 19.45616475, lng: -99.21244170 },
-        { nombre: "Atenas", lat: 19.45605383, lng: -99.21215149 },
-        { nombre: "Argel", lat: 19.45616343, lng: -99.21209852 },
-        { nombre: "Damasco", lat: 19.45655913, lng: -99.21195795 },
-        { nombre: "Seul", lat: 19.45645138, lng: -99.21200377 },
-        { nombre: "Estambul", lat: 19.45598729, lng: -99.21172351 },
-        { nombre: "Moscu", lat: 19.45594902, lng: -99.21160914 },
-        { nombre: "Berna", lat: 19.45605780, lng: -99.21156581 },
-        { nombre: "Oslo", lat: 19.45635541, lng: -99.21146957 },
-        { nombre: "Belgrado", lat: 19.45645470, lng: -99.21142176 },
-        { nombre: "Estocolmo", lat: 19.45674335, lng: -99.21133109 },
-        { nombre: "Varsovia", lat: 19.45677102, lng: -99.21145122 },
-        { nombre: "Paris", lat: 19.45703713, lng: -99.21065450 },
-        { nombre: "Lisboa", lat: 19.45716131, lng: -99.21107291 },
-        { nombre: "Berlin", lat: 19.45736503, lng: -99.21167092 },
-        { nombre: "Amsterdam", lat: 19.45757685, lng: -99.21230237 },
-        { nombre: "Bucarest", lat: 19.45717118, lng: -99.21244567 },
-        { nombre: "Copenhague", lat: 19.45746026, lng: -99.21234271 },
-        { nombre: "Zurich", lat: 19.45725488, lng: -99.21171444 },
-        { nombre: "Madrid", lat: 19.45713592, lng: -99.21096000 },
-        { nombre: "Bruselas", lat: 19.45726832, lng: -99.21136090 },
-        { nombre: "Londres", lat: 19.45716004, lng: -99.21139977 },
-        { nombre: "Viena", lat: 19.45746738, lng: -99.21196433 },
-        { nombre: "Praga", lat: 19.45735671, lng: -99.21199842 },
-        // Los últimos puntos del KMZ son puertas, ya los manejamos en el array `puertas`
-    ];
-
-    // Marcadores de edificios (solo para saber coordenadas)
+    // 3. Datos: edificios y puertas cargados desde datos.json
+    let edificios = [];
     const markers = {};
     let marcadorEdificioActual = null;
     let edificioSeleccionado = null;
+    const puertaMarkers = [];
+    let mostrarPuertas = false;
 
-    edificios.forEach(edif => {
-        const marker = L.marker([edif.lat, edif.lng]);
-        markers[edif.nombre.toLowerCase()] = marker;
-    });
-
-    // Icono de flecha animada para el edificio seleccionado (incluye nombre)
-    // iconAnchor [0,0] + translate(-50%,-100%) hace que la punta de la flecha coincida con la lat/lng
     function crearIconoEdificio(nombre) {
         const safeName = nombre.replace(/"/g, '&quot;');
         return L.divIcon({
             className: '',
-            html: `
-                <div class="edificio-marker">
-                    <div class="edificio-label">${safeName}</div>
-                    <div class="edificio-arrow">⬇</div>
-                </div>
-            `,
+            html: '<div class="edificio-marker"><div class="edificio-label">' + safeName + '</div><div class="edificio-arrow">⬇</div></div>',
             iconSize: [0, 0],
             iconAnchor: [0, 0],
         });
     }
 
-    // 3.b Puertas de acceso (puntos) extraídas del KMZ
-    const puertasPunto = [
-        { nombre: "Puerta 1 - Toreo I", lat: 19.456297, lng: -99.213328 },
-        { nombre: "Puerta 2 - Toreo I", lat: 19.45602920, lng: -99.21269535 },
-        { nombre: "Puerta 3 - Toreo I", lat: 19.45581988, lng: -99.21202550 },
-        { nombre: "Puerta 4 - Toreo I", lat: 19.45666436, lng: -99.21043991 },
-        { nombre: "Puerta 2 - Toreo II", lat: 19.45657398, lng: -99.21424090 },
-        { nombre: "Puerta 1 - Toreo II", lat: 19.45792777, lng: -99.21442222 },
-    ];
-
-    const puertaMarkers = [];
-    let mostrarPuertas = false;
-
-    // Dibujar puntos de puertas con icono (Toreo I vs Toreo II diferenciados)
-    puertasPunto.forEach(p => {
-        const partes = p.nombre.split(' - ');
-        const linea1 = partes[0] || '';
-        const linea2 = partes[1] || '';
-
-        const tipoToreo = (linea2 || '').toLowerCase().trim();
-        const esToreoI = tipoToreo === 'toreo i';
-
-        // Icono de acceso vehicular (mismo símbolo, color distinto por conjunto)
-        const badgeTexto = esToreoI ? 'Toreo I' : 'Toreo II';
-        const badgeColor = esToreoI ? '#1a73e8' : '#34a853'; // azul / verde
-        const emoji = '🚘';
-
-        const carIcon = L.divIcon({
+    function crearPuertaMarker(p) {
+        var partes = p.nombre.split(' - ');
+        var linea1 = partes[0] || '';
+        var linea2 = partes[1] || '';
+        var esToreoI = (linea2 || '').toLowerCase().trim() === 'toreo i';
+        var badgeTexto = esToreoI ? 'Toreo I' : 'Toreo II';
+        var badgeColor = esToreoI ? '#1a73e8' : '#34a853';
+        var carIcon = L.divIcon({
             className: '',
-            html: `
-                <div class="puerta-car-marker">
-                    <span class="emoji">${emoji}</span>
-                    <div class="puerta-car-label">
-                        <span>${linea1}</span>
-                        <span class="puerta-badge" style="background:${badgeColor};">${badgeTexto}</span>
-                    </div>
-                </div>
-            `,
+            html: '<div class="puerta-car-marker"><span class="emoji">🚘</span><div class="puerta-car-label"><span>' + linea1 + '</span><span class="puerta-badge" style="background:' + badgeColor + ';">' + badgeTexto + '</span></div></div>',
             iconSize: [0, 0],
             iconAnchor: [0, 0],
         });
+        var m = L.marker([p.lat, p.lng], { icon: carIcon }).addTo(map);
+        puertaMarkers.push(m);
+    }
 
-        const markerPuerta = L.marker([p.lat, p.lng], { icon: carIcon }).addTo(map);
-        puertaMarkers.push(markerPuerta);
-    });
+    function ocultarSplash() {
+        var splash = document.getElementById('splash');
+        if (splash) {
+            splash.classList.add('fade-out');
+            setTimeout(function() { splash.remove(); }, 500);
+        }
+    }
+
+    // Cargar datos desde datos.json
+    fetch('datos.json')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            edificios = data.edificios || [];
+            var puertas = data.puertas || [];
+
+            edificios.forEach(function(edif) {
+                var marker = L.marker([edif.lat, edif.lng]);
+                markers[edif.nombre.toLowerCase()] = marker;
+            });
+
+            puertas.forEach(crearPuertaMarker);
+            actualizarVisibilidadPuertas();
+
+            // Si la URL tiene ?edificio=Nombre, ir a ese edificio
+            var params = new URLSearchParams(window.location.search);
+            var q = params.get('edificio');
+            if (q) {
+                var nombreBuscado = q.trim().toLowerCase();
+                var ed = edificios.find(function(e) { return e.nombre.toLowerCase() === nombreBuscado; });
+                if (ed) {
+                    map.whenReady(function() { irAEdificio(ed.nombre); });
+                }
+            }
+
+            ocultarSplash();
+        })
+        .catch(function(err) {
+            console.warn('Error cargando datos.json:', err);
+            ocultarSplash();
+        });
 
     // Mostrar/ocultar puertas según el nivel de zoom y el toggle del usuario:
     // - visibles solo cuando el zoom está entre 17 y 18 (inclusive) Y mostrarPuertas = true
@@ -568,21 +548,6 @@
         }
     });
 
-    // Al cargar: si la URL tiene ?edificio=Nombre, ir a ese edificio (cuando el mapa esté listo)
-    (function() {
-        var params = new URLSearchParams(window.location.search);
-        var q = params.get('edificio');
-        if (!q) return;
-
-        var nombreBuscado = q.trim().toLowerCase();
-        var ed = edificios.find(function(e) { return e.nombre.toLowerCase() === nombreBuscado; });
-        if (!ed) return;
-
-        map.whenReady(function() {
-            irAEdificio(ed.nombre);
-        });
-    })();
-
     // 5. Geolocalización: marcador de "Mi ubicación"
     let marcadorUbicacion = null;
     let circuloPrecision = null;
@@ -592,10 +557,14 @@
             alert("Tu navegador no soporta geolocalización.");
             return;
         }
+        mostrarToast('Obteniendo ubicación...');
         map.locate({ setView: true, maxZoom: 18, enableHighAccuracy: true });
     }
 
     map.on('locationfound', function(e) {
+        var toast = document.getElementById('toast');
+        if (toast) toast.remove();
+
         const radio = e.accuracy / 2;
 
         if (marcadorUbicacion) {
@@ -624,7 +593,9 @@
     });
 
     map.on('locationerror', function(e) {
-        alert("No se pudo obtener tu ubicación. Revisa que hayas permitido el acceso a la ubicación en el navegador.");
+        var toast = document.getElementById('toast');
+        if (toast) toast.remove();
+        mostrarToast('No se pudo obtener tu ubicación');
     });
 
     // PWA: registrar Service Worker para uso offline y mostrar versión
