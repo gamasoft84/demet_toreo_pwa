@@ -354,17 +354,34 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// 5. Geolocalización: marcador de "Mi ubicación"
+// 5. Geolocalización: marcador de "Mi ubicación" con seguimiento continuo
 var marcadorUbicacion = null;
 var circuloPrecision = null;
+var ubicacionActiva = false;
+var primerUbicacion = true;
 
 function irAMiUbicacion() {
     if (!navigator.geolocation) {
         alert('Tu navegador no soporta geolocalización.');
         return;
     }
+    if (ubicacionActiva) {
+        map.stopLocate();
+        ubicacionActiva = false;
+        primerUbicacion = true;
+        if (marcadorUbicacion) { map.removeLayer(marcadorUbicacion); marcadorUbicacion = null; }
+        if (circuloPrecision) { map.removeLayer(circuloPrecision); circuloPrecision = null; }
+        var btn = document.querySelector('[onclick="irAMiUbicacion()"]');
+        if (btn) { btn.style.background = ''; btn.style.color = ''; }
+        mostrarToast('Ubicación desactivada');
+        return;
+    }
+    ubicacionActiva = true;
+    primerUbicacion = true;
+    var btn = document.querySelector('[onclick="irAMiUbicacion()"]');
+    if (btn) { btn.style.background = '#2b7cff'; btn.style.color = '#fff'; }
     mostrarToast('Obteniendo ubicación...');
-    map.locate({ setView: true, maxZoom: 18, enableHighAccuracy: true });
+    map.locate({ watch: true, maxZoom: 18, enableHighAccuracy: true });
 }
 
 map.on('locationfound', function(e) {
@@ -373,25 +390,35 @@ map.on('locationfound', function(e) {
 
     var radio = e.accuracy / 2;
 
-    if (marcadorUbicacion) map.removeLayer(marcadorUbicacion);
-    if (circuloPrecision) map.removeLayer(circuloPrecision);
+    if (circuloPrecision) {
+        circuloPrecision.setLatLng(e.latlng).setRadius(radio);
+    } else {
+        circuloPrecision = L.circle(e.latlng, {
+            radius: radio,
+            color: '#2b7cff',
+            fillColor: '#2b7cff',
+            fillOpacity: 0.15,
+            weight: 2
+        }).addTo(map);
+    }
 
-    circuloPrecision = L.circle(e.latlng, {
-        radius: radio,
-        color: '#2b7cff',
-        fillColor: '#2b7cff',
-        fillOpacity: 0.15,
-        weight: 2
-    }).addTo(map);
+    if (marcadorUbicacion) {
+        marcadorUbicacion.setLatLng(e.latlng);
+    } else {
+        marcadorUbicacion = L.marker(e.latlng, {
+            icon: L.divIcon({
+                className: 'mi-ubicacion-marker',
+                html: '<div style="background:#2b7cff;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.4);"></div>',
+                iconSize: [22, 22],
+                iconAnchor: [11, 11]
+            })
+        }).addTo(map).bindPopup('<b>Estás aquí</b>');
+    }
 
-    marcadorUbicacion = L.marker(e.latlng, {
-        icon: L.divIcon({
-            className: 'mi-ubicacion-marker',
-            html: '<div style="background:#2b7cff;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.4);"></div>',
-            iconSize: [22, 22],
-            iconAnchor: [11, 11]
-        })
-    }).addTo(map).bindPopup('<b>Estás aquí</b>');
+    if (primerUbicacion) {
+        map.setView(e.latlng, 18);
+        primerUbicacion = false;
+    }
 });
 
 map.on('locationerror', function() {
