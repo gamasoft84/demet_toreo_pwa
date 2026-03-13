@@ -1,7 +1,7 @@
 {
   "name": "Demet Toreo - Mapa de Edificios",
   "short_name": "Demet Toreo",
-  "description": "Mapa de edificios y puertas de acceso de Demet Toreo. Busca un edificio y ubica puertas de acceso vehicular.",
+  "description": "Mapa de edificios y puertas de acceso de Demet Toreo I y II.",
   "start_url": "./mapa.html",
   "scope": "./",
   "display": "standalone",
@@ -10,6 +10,18 @@
   "background_color": "#ffffff",
   "lang": "es",
   "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
     {
       "src": "icons/icon.svg",
       "sizes": "any",

@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Demet Toreo" />
-    <link rel="apple-touch-icon" href="icons/icon.svg" />
+    <link rel="apple-touch-icon" href="icons/icon-192.png" />
     <link rel="manifest" href="manifest.json" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -154,13 +154,13 @@
     <ul id="sugerencias" role="listbox" aria-label="Sugerencias de edificios"></ul>
     <div style="display:flex; gap:6px; width:100%; flex-wrap: wrap;">
         <button type="button" onclick="irAMiUbicacion()" aria-label="Centrar mapa en mi ubicación" title="Centrar en mi ubicación (Ctrl+L)">📍 Mi ubicación</button>
-        <button type="button" class="secondary" id="toggle-puertas-btn" onclick="togglePuertas()" aria-label="Mostrar u ocultar puertas de acceso" title="Mostrar/ocultar puertas de acceso">🚘 Mostrar Accesos</button>
         <button type="button" class="secondary" id="btn-compartir" onclick="compartirEdificio()" aria-label="Compartir enlace del edificio seleccionado" title="Compartir edificio (Ctrl+Shift+C)" style="display:none;">🔗 Compartir</button>
+        <button type="button" class="secondary" id="toggle-puertas-btn" onclick="togglePuertas()" aria-label="Mostrar u ocultar puertas de acceso" title="Mostrar/ocultar puertas de acceso">🚘 Mostrar Accesos</button>
     </div>
 </div>
 
 <div id="map" role="application" aria-label="Mapa de edificios Demet Toreo"></div>
-<div id="version-badge" style="position:fixed;bottom:6px;right:6px;z-index:1000;background:rgba(0,0,0,0.45);color:#fff;padding:2px 8px;border-radius:6px;font-size:0.7rem;pointer-events:none;"></div>
+<div id="version-badge" style="position:fixed;bottom:6px;left:50%;transform:translateX(-50%);z-index:1000;background:rgba(0,0,0,0.45);color:#fff;padding:2px 8px;border-radius:6px;font-size:0.7rem;pointer-events:none;"></div>
 
 <script>
     // 1. Configurar el mapa centrado en tu zona (Lomas de Sotelo)
