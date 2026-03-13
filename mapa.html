@@ -153,7 +153,7 @@
     <ul id="sugerencias" role="listbox" aria-label="Sugerencias de edificios"></ul>
     <div style="display:flex; gap:6px; width:100%; flex-wrap: wrap;">
         <button type="button" onclick="irAMiUbicacion()" aria-label="Centrar mapa en mi ubicación" title="Centrar en mi ubicación (Ctrl+L)">📍 Mi ubicación</button>
-        <button type="button" class="secondary" id="toggle-puertas-btn" onclick="togglePuertas()" aria-label="Mostrar u ocultar puertas de acceso" title="Mostrar/ocultar puertas de acceso">🚘 Puertas</button>
+        <button type="button" class="secondary" id="toggle-puertas-btn" onclick="togglePuertas()" aria-label="Mostrar u ocultar puertas de acceso" title="Mostrar/ocultar puertas de acceso">🚘 Mostrar Accesos</button>
         <button type="button" class="secondary" id="btn-compartir" onclick="compartirEdificio()" aria-label="Compartir enlace del edificio seleccionado" title="Compartir edificio (Ctrl+Shift+C)" style="display:none;">🔗 Compartir</button>
     </div>
 </div>
@@ -348,6 +348,9 @@
                 }
             }
         });
+        // Ocultar el botón de Acceso cuando el zoom está fuera de 17-18
+        const btn = document.getElementById('toggle-puertas-btn');
+        if (btn) btn.style.display = (z >= 17 && z <= 18) ? '' : 'none';
     }
 
     function togglePuertas() {
@@ -355,9 +358,9 @@
         const btn = document.getElementById('toggle-puertas-btn');
         if (btn) {
             if (mostrarPuertas) {
-                btn.textContent = '🚘 Mostrar Acceso';
+                btn.textContent = '🚘 Mostrar Accesos';
             } else {
-                btn.textContent = '🚘 Ocultar Acceso';
+                btn.textContent = '🚘 Ocultar Accesos';
             }
         }
         actualizarVisibilidadPuertas();

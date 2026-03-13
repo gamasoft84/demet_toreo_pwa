@@ -2,7 +2,7 @@
 // Cache: app shell (página + Leaflet) para funcionar offline
 // Compatible con raíz (/) y subruta (ej. GitHub Pages: /demet_pwa/)
 
-const CACHE_NAME = 'demet-toreo-v1';
+const CACHE_NAME = 'demet-toreo-v1.0.4';
 var BASE = self.location.pathname.replace(/[^/]*$/, ''); // '' si en raíz, '/demet_pwa/' si en subruta
 
 function appShellUrls() {
