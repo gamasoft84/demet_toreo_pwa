@@ -23,18 +23,17 @@ mapaCalles.addTo(map);
 var capaActual = 'calles';
 
 function toggleCapa() {
+    var btn = document.getElementById('btn-capa');
     if (capaActual === 'calles') {
         map.removeLayer(mapaCalles);
         mapaSatelite.addTo(map);
         capaActual = 'satelite';
-        document.getElementById('btn-capa').textContent = '🗺️';
-        document.getElementById('btn-capa').title = 'Cambiar a Mapa';
+        if (btn) { btn.lastChild.textContent = 'Mapa'; btn.title = 'Cambiar a Mapa'; }
     } else {
         map.removeLayer(mapaSatelite);
         mapaCalles.addTo(map);
         capaActual = 'calles';
-        document.getElementById('btn-capa').textContent = '🛰️';
-        document.getElementById('btn-capa').title = 'Cambiar a Satélite';
+        if (btn) { btn.lastChild.textContent = 'Satélite'; btn.title = 'Cambiar a Satélite'; }
     }
 }
 
@@ -194,8 +193,10 @@ function irAEdificio(nombre) {
 
     edificioSeleccionado = nombre;
     document.title = nombre + ' - Demet Toreo';
-    var toolbarEdificio = document.getElementById('toolbar-edificio');
-    if (toolbarEdificio) toolbarEdificio.style.display = 'flex';
+    var btnCompartir = document.getElementById('btn-compartir');
+    var btnLlegar = document.getElementById('btn-llegar');
+    if (btnCompartir) btnCompartir.style.display = 'inline-flex';
+    if (btnLlegar) btnLlegar.style.display = 'inline-flex';
     actualizarUrlEdificio(nombre);
 
     var cercana = puertaMasCercana(latlng.lat, latlng.lng);
@@ -211,8 +212,10 @@ function limpiarEdificioSeleccionado() {
     }
     edificioSeleccionado = null;
     document.title = 'Buscador de Edificios - Demet Toreo';
-    var toolbarEdificio = document.getElementById('toolbar-edificio');
-    if (toolbarEdificio) toolbarEdificio.style.display = 'none';
+    var btnCompartir = document.getElementById('btn-compartir');
+    var btnLlegar = document.getElementById('btn-llegar');
+    if (btnCompartir) btnCompartir.style.display = 'none';
+    if (btnLlegar) btnLlegar.style.display = 'none';
     actualizarUrlEdificio(null);
 }
 
@@ -231,14 +234,14 @@ function compartirEdificio() {
     if (!edificioSeleccionado) return;
     var url = window.location.origin + window.location.pathname + '?edificio=' + encodeURIComponent(edificioSeleccionado);
 
-    copiarAlPortapapeles(url);
-
     if (navigator.share && navigator.canShare && navigator.canShare({ url: url })) {
         navigator.share({
             title: edificioSeleccionado + ' - Demet Toreo',
             text: 'Ver edificio en el mapa',
             url: url
         }).catch(function() {});
+    } else {
+        window.open(url, '_blank');
     }
 }
 
@@ -250,13 +253,14 @@ function comoLlegar() {
     var ll = baseMarker.getLatLng();
     var destino = ll.lat + ',' + ll.lng;
     var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    var url;
+    var isPWA = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
     if (isIOS) {
-        url = 'maps://?daddr=' + destino + '&dirflg=d';
+        location.href = 'maps://?daddr=' + destino + '&dirflg=d';
+    } else if (isPWA) {
+        location.href = 'https://www.google.com/maps/dir/?api=1&destination=' + destino + '&travelmode=driving';
     } else {
-        url = 'https://www.google.com/maps/dir/?api=1&destination=' + destino + '&travelmode=driving';
+        window.open('https://www.google.com/maps/dir/?api=1&destination=' + destino + '&travelmode=driving', '_blank');
     }
-    location.href = url;
 }
 
 function distanciaEntre(lat1, lng1, lat2, lng2) {
@@ -373,15 +377,15 @@ function irAMiUbicacion() {
         primerUbicacion = true;
         if (marcadorUbicacion) { map.removeLayer(marcadorUbicacion); marcadorUbicacion = null; }
         if (circuloPrecision) { map.removeLayer(circuloPrecision); circuloPrecision = null; }
-        var btn = document.querySelector('[onclick="irAMiUbicacion()"]');
-        if (btn) { btn.style.background = ''; btn.style.color = ''; }
+        var btn = document.getElementById('btn-ubicacion');
+        if (btn) btn.classList.remove('active');
         mostrarToast('Ubicación desactivada');
         return;
     }
     ubicacionActiva = true;
     primerUbicacion = true;
-    var btn = document.querySelector('[onclick="irAMiUbicacion()"]');
-    if (btn) { btn.style.background = '#2b7cff'; btn.style.color = '#fff'; }
+    var btn = document.getElementById('btn-ubicacion');
+    if (btn) btn.classList.add('active');
     mostrarToast('Obteniendo ubicación...');
     map.locate({ watch: true, maxZoom: 18, enableHighAccuracy: true });
 }

@@ -41,39 +41,52 @@ button {
 button:hover { background: #1a6ae6; }
 button:active { transform: scale(0.97); }
 button:focus-visible { outline: 2px solid #2b7cff; outline-offset: 2px; }
-button.secondary {
-    background: #f0f0f0; color: #444;
-    display: inline-flex; align-items: center; gap: 5px;
-}
-button.secondary:hover { background: #e4e4e4; }
 
-/* Botones icono (buscar, ubicación) */
+/* Botón icono (buscar) */
 .btn-icon {
     padding: 8px 10px; min-width: 38px; justify-content: center;
     font-size: 1.05rem; line-height: 1;
 }
-.btn-ubicacion { background: #f0f0f0; color: #333; }
-.btn-ubicacion:hover { background: #e4e4e4; }
 
-/* Toolbar de acciones */
-.toolbar {
-    display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
-    width: 100%;
+/* Barra de botones pill */
+.pill-bar {
+    display: flex; gap: 6px; align-items: center;
+    width: 100%; overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
 }
+.pill-bar::-webkit-scrollbar { display: none; }
 
-/* Barra contextual del edificio seleccionado */
-.toolbar-edificio {
-    background: #f0f6ff;
-    border-radius: 10px;
-    padding: 8px 10px;
-    gap: 8px;
-    animation: fadeIn 0.2s ease;
+/* Botón pill (cápsula) */
+.pill {
+    padding: 7px 14px 7px 10px;
+    background: rgba(40, 50, 80, 0.85);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    transition: background 0.2s, transform 0.05s;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
 }
+.pill:hover { background: rgba(50, 65, 105, 0.95); }
+.pill:active { transform: scale(0.97); }
+.pill:focus-visible { outline: 2px solid #2b7cff; outline-offset: 2px; }
+.pill.active { background: rgba(43, 124, 255, 0.9); }
 
-
-/* Emoji + label dentro de botones */
-.btn-emoji { font-size: 1rem; line-height: 1; flex-shrink: 0; }
-.btn-label { font-size: 0.8rem; }
+/* Punto indicador de color */
+.pill-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 3px rgba(0,0,0,0.3);
+}
 
 /* Sugerencias */
 #sugerencias {
@@ -101,20 +114,17 @@ button.secondary:hover { background: #e4e4e4; }
 }
 .leaflet-control-zoom { border-radius: 10px !important; box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important; }
 
-/* ── MOBILE: solo iconos, más compacto ── */
+/* ── MOBILE ── */
 @media (max-width: 480px) {
     #search-container { padding: 8px; gap: 5px; border-radius: 12px; }
     input { padding: 9px 10px; font-size: 0.9rem; }
-    .btn-label { display: none; }
-    button.secondary { padding: 7px 10px; }
-    .toolbar-edificio { padding: 6px 8px; }
-
+    .pill { padding: 6px 12px 6px 8px; font-size: 0.75rem; }
+    .pill-dot { width: 8px; height: 8px; }
 }
 
-/* ── DESKTOP: labels visibles, más espaciado ── */
+/* ── DESKTOP ── */
 @media (min-width: 481px) {
     #search-container { padding: 12px; gap: 8px; }
-    .btn-label { display: inline; }
 }
 
 /* Splash screen */
@@ -149,11 +159,9 @@ button.secondary:hover { background: #e4e4e4; }
     input:focus { border-color: #5a9cff; box-shadow: 0 0 0 3px rgba(90,156,255,0.2); }
     button { background: #3b8cff; }
     button:hover { background: #2a7ae6; }
-    button.secondary { background: #3a3a50; color: #ccc; }
-    button.secondary:hover { background: #4a4a60; }
-    .btn-ubicacion { background: #3a3a50; color: #ccc; }
-    .btn-ubicacion:hover { background: #4a4a60; }
-    .toolbar-edificio { background: #2a2a44; }
+    .pill { background: rgba(20, 25, 50, 0.9); }
+    .pill:hover { background: rgba(30, 40, 70, 0.95); }
+    .pill.active { background: rgba(59, 140, 255, 0.9); }
 
     #sugerencias { background: #2a2a3e; border-color: #444; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
     #sugerencias li { color: #e0e0e0; }
