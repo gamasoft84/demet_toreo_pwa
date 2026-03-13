@@ -30,6 +30,7 @@ var markers = {};
 var marcadorEdificioActual = null;
 var edificioSeleccionado = null;
 var puertaMarkers = [];
+var puertasDatos = [];
 var mostrarPuertas = false;
 
 function crearIconoEdificio(nombre) {
@@ -79,6 +80,7 @@ fetch('datos.json')
             markers[edif.nombre.toLowerCase()] = marker;
         });
 
+        puertasDatos = puertas;
         puertas.forEach(crearPuertaMarker);
         actualizarVisibilidadPuertas();
 
@@ -198,6 +200,11 @@ function irAEdificio(nombre) {
     if (btnCompartir) btnCompartir.style.display = 'inline-flex';
     if (btnLlegar) btnLlegar.style.display = 'inline-flex';
     actualizarUrlEdificio(nombre);
+
+    var cercana = puertaMasCercana(latlng.lat, latlng.lng);
+    if (cercana) {
+        mostrarToast('🚘 Puerta más cercana: ' + cercana.puerta.nombre + ' (~' + cercana.distancia + 'm)');
+    }
 }
 
 function limpiarEdificioSeleccionado() {
@@ -253,6 +260,30 @@ function comoLlegar() {
     } else {
         window.open('https://www.google.com/maps/dir/?api=1&destination=' + destino + '&travelmode=driving', '_blank');
     }
+}
+
+function distanciaEntre(lat1, lng1, lat2, lng2) {
+    var R = 6371000;
+    var dLat = (lat2 - lat1) * Math.PI / 180;
+    var dLng = (lng2 - lng1) * Math.PI / 180;
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function puertaMasCercana(lat, lng) {
+    if (!puertasDatos || puertasDatos.length === 0) return null;
+    var mejor = null;
+    var mejorDist = Infinity;
+    puertasDatos.forEach(function(p) {
+        var d = distanciaEntre(lat, lng, p.lat, p.lng);
+        if (d < mejorDist) {
+            mejorDist = d;
+            mejor = p;
+        }
+    });
+    return mejor ? { puerta: mejor, distancia: Math.round(mejorDist) } : null;
 }
 
 function copiarAlPortapapeles(texto) {
