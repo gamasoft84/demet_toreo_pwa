@@ -89,7 +89,17 @@ button.secondary:hover { background: #e4e4e4; }
 }
 #sugerencias li:hover, #sugerencias li.focused { background: #f0f4ff; }
 
-.leaflet-control-layers { border-radius: 8px !important; overflow: hidden; }
+/* Controles de zoom Leaflet */
+.leaflet-bottom.leaflet-right {
+    margin-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+    margin-right: calc(8px + env(safe-area-inset-right, 0px));
+}
+.leaflet-control-zoom a {
+    width: 36px !important; height: 36px !important;
+    line-height: 36px !important; font-size: 18px !important;
+    border-radius: 10px !important;
+}
+.leaflet-control-zoom { border-radius: 10px !important; box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important; }
 
 /* ── MOBILE: solo iconos, más compacto ── */
 @media (max-width: 480px) {
@@ -148,7 +158,7 @@ button.secondary:hover { background: #e4e4e4; }
     #sugerencias { background: #2a2a3e; border-color: #444; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
     #sugerencias li { color: #e0e0e0; }
     #sugerencias li:hover, #sugerencias li.focused { background: #3a3a55; }
-    .leaflet-control-layers { background: rgba(30,30,46,0.96) !important; color: #e0e0e0 !important; }
+
     #splash { background: #1a1a2e; }
 }
 

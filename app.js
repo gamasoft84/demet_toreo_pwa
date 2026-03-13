@@ -5,8 +5,11 @@ var map = L.map('map', {
     rotate: true,
     touchRotate: true,
     shiftKeyRotate: true,
-    rotateControl: { closeOnZeroBearing: false },
+    rotateControl: { closeOnZeroBearing: false, position: 'bottomright' },
+    zoomControl: false,
 }).setView([19.45711, -99.21237], 17);
+
+L.control.zoom({ position: 'bottomright' }).addTo(map);
 
 // 2. Capas: callejero y satélite
 var mapaCalles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -17,12 +20,23 @@ var mapaSatelite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/serv
 });
 
 mapaCalles.addTo(map);
+var capaActual = 'calles';
 
-L.control.layers(
-    { 'Mapa': mapaCalles, 'Satélite': mapaSatelite },
-    null,
-    { collapsed: false }
-).addTo(map);
+function toggleCapa() {
+    if (capaActual === 'calles') {
+        map.removeLayer(mapaCalles);
+        mapaSatelite.addTo(map);
+        capaActual = 'satelite';
+        document.getElementById('btn-capa').textContent = '🗺️';
+        document.getElementById('btn-capa').title = 'Cambiar a Mapa';
+    } else {
+        map.removeLayer(mapaSatelite);
+        mapaCalles.addTo(map);
+        capaActual = 'calles';
+        document.getElementById('btn-capa').textContent = '🛰️';
+        document.getElementById('btn-capa').title = 'Cambiar a Satélite';
+    }
+}
 
 // 3. Datos: edificios y puertas cargados desde datos.json
 var edificios = [];
@@ -115,9 +129,7 @@ function actualizarVisibilidadPuertas() {
 }
 
 map.on('zoomend', actualizarVisibilidadPuertas);
-map.on('baselayerchange', function() {
-    requestAnimationFrame(actualizarVisibilidadPuertas);
-});
+
 actualizarVisibilidadPuertas();
 
 // 4. Búsqueda y sugerencias
