@@ -1,50 +1,127 @@
 * { box-sizing: border-box; }
 body { margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; color: #1a1a1a; }
 #map { height: 100vh; width: 100vw; }
+
+/* Panel de búsqueda */
 #search-container {
     position: absolute;
-    top: calc(12px + env(safe-area-inset-top, 0px));
-    left: calc(12px + env(safe-area-inset-left, 0px));
-    right: calc(12px + env(safe-area-inset-right, 0px));
+    top: calc(8px + env(safe-area-inset-top, 0px));
+    left: calc(8px + env(safe-area-inset-left, 0px));
+    right: calc(8px + env(safe-area-inset-right, 0px));
     z-index: 1000;
-    max-width: 420px;
-    background: rgba(255,255,255,0.96); padding: 12px; border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    max-width: 460px;
+    background: rgba(255,255,255,0.97);
+    padding: 10px;
+    border-radius: 14px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.12);
+    display: flex; flex-direction: column; gap: 6px;
 }
-#search-container .search-row { display: flex; gap: 6px; flex: 1; min-width: 0; }
+
+/* Fila de búsqueda */
+.search-row {
+    display: flex; gap: 6px; align-items: center;
+}
 input {
-    padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 8px;
+    padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 10px;
     font-size: 0.95rem; flex: 1; min-width: 0;
     background: #fff; color: #1a1a1a;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
-input:focus { outline: none; border-color: #2b7cff; box-shadow: 0 0 0 3px rgba(43,124,255,0.2); }
+input:focus { outline: none; border-color: #2b7cff; box-shadow: 0 0 0 3px rgba(43,124,255,0.15); }
 input:focus-visible { outline: 2px solid #2b7cff; outline-offset: 2px; }
-input::placeholder { color: #888; }
-button:focus-visible { outline: 2px solid #2b7cff; outline-offset: 2px; }
+input::placeholder { color: #999; }
+
+/* Botones base */
 button {
-    padding: 10px 14px; background: #2b7cff; color: white; border: none; border-radius: 8px;
-    font-size: 0.9rem; font-weight: 500; cursor: pointer; white-space: nowrap;
+    padding: 8px 14px; background: #2b7cff; color: white; border: none; border-radius: 10px;
+    font-size: 0.85rem; font-weight: 500; cursor: pointer; white-space: nowrap;
     transition: background 0.2s, transform 0.05s;
+    display: inline-flex; align-items: center; gap: 5px;
 }
 button:hover { background: #1a6ae6; }
-button:active { transform: scale(0.98); }
-button.secondary { background: #f0f0f0; color: #333; }
-button.secondary:hover { background: #e0e0e0; }
+button:active { transform: scale(0.97); }
+button:focus-visible { outline: 2px solid #2b7cff; outline-offset: 2px; }
+button.secondary {
+    background: #f0f0f0; color: #444;
+    display: inline-flex; align-items: center; gap: 5px;
+}
+button.secondary:hover { background: #e4e4e4; }
+
+/* Botones icono (buscar, ubicación) */
+.btn-icon {
+    padding: 8px 10px; min-width: 38px; justify-content: center;
+    font-size: 1.05rem; line-height: 1;
+}
+.btn-ubicacion { background: #f0f0f0; color: #333; }
+.btn-ubicacion:hover { background: #e4e4e4; }
+
+/* Toolbar de acciones */
+.toolbar {
+    display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+    width: 100%;
+}
+
+/* Barra contextual del edificio seleccionado */
+.toolbar-edificio {
+    background: #f0f6ff;
+    border-radius: 10px;
+    padding: 8px 10px;
+    gap: 8px;
+    animation: fadeIn 0.2s ease;
+}
+.edificio-nombre-tag {
+    font-weight: 600; font-size: 0.85rem; color: #2b7cff;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    flex: 1; min-width: 0;
+}
+.toolbar-actions {
+    display: flex; gap: 5px; align-items: center; flex-shrink: 0;
+}
+
+/* Botón cerrar selección */
+.btn-cerrar {
+    padding: 4px 8px; min-width: 28px; min-height: 28px;
+    background: transparent; color: #888;
+    font-size: 1rem; line-height: 1;
+    border-radius: 8px; justify-content: center;
+}
+.btn-cerrar:hover { background: #e8e8e8; color: #333; }
+
+/* Emoji + label dentro de botones */
+.btn-emoji { font-size: 1rem; line-height: 1; flex-shrink: 0; }
+.btn-label { font-size: 0.8rem; }
+
+/* Sugerencias */
 #sugerencias {
     width: 100%; max-height: 180px; overflow-y: auto;
-    background: white; border: 1px solid #e0e0e0; border-radius: 8px;
-    margin-top: 2px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    background: white; border: 1px solid #e0e0e0; border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     display: none; list-style: none; padding: 4px; margin: 0;
 }
 #sugerencias.visible { display: block; }
 #sugerencias li {
-    padding: 10px 12px; cursor: pointer; border-radius: 6px;
+    padding: 10px 12px; cursor: pointer; border-radius: 8px;
     font-size: 0.9rem; color: #1a1a1a;
 }
 #sugerencias li:hover, #sugerencias li.focused { background: #f0f4ff; }
+
 .leaflet-control-layers { border-radius: 8px !important; overflow: hidden; }
+
+/* ── MOBILE: solo iconos, más compacto ── */
+@media (max-width: 480px) {
+    #search-container { padding: 8px; gap: 5px; border-radius: 12px; }
+    input { padding: 9px 10px; font-size: 0.9rem; }
+    .btn-label { display: none; }
+    button.secondary { padding: 7px 10px; }
+    .toolbar-edificio { padding: 6px 8px; }
+    .edificio-nombre-tag { font-size: 0.8rem; }
+}
+
+/* ── DESKTOP: labels visibles, más espaciado ── */
+@media (min-width: 481px) {
+    #search-container { padding: 12px; gap: 8px; }
+    .btn-label { display: inline; }
+}
 
 /* Splash screen */
 #splash {
@@ -70,16 +147,22 @@ button.secondary:hover { background: #e0e0e0; }
 @media (prefers-color-scheme: dark) {
     body { color: #e0e0e0; }
     #search-container {
-        background: rgba(30,30,46,0.96);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        background: rgba(30,30,46,0.97);
+        box-shadow: 0 2px 16px rgba(0,0,0,0.5);
     }
     input { background: #2a2a3e; color: #e0e0e0; border-color: #444; }
     input::placeholder { color: #999; }
-    input:focus { border-color: #5a9cff; box-shadow: 0 0 0 3px rgba(90,156,255,0.3); }
+    input:focus { border-color: #5a9cff; box-shadow: 0 0 0 3px rgba(90,156,255,0.2); }
     button { background: #3b8cff; }
     button:hover { background: #2a7ae6; }
     button.secondary { background: #3a3a50; color: #ccc; }
     button.secondary:hover { background: #4a4a60; }
+    .btn-ubicacion { background: #3a3a50; color: #ccc; }
+    .btn-ubicacion:hover { background: #4a4a60; }
+    .btn-cerrar { color: #888; }
+    .btn-cerrar:hover { background: #3a3a50; color: #e0e0e0; }
+    .toolbar-edificio { background: #2a2a44; }
+    .edificio-nombre-tag { color: #7ab4ff; }
     #sugerencias { background: #2a2a3e; border-color: #444; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
     #sugerencias li { color: #e0e0e0; }
     #sugerencias li:hover, #sugerencias li.focused { background: #3a3a55; }

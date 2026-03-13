@@ -37,14 +37,26 @@
         <input type="text" id="busqueda" placeholder="Buscar edificio..." autocomplete="off"
                aria-label="Nombre del edificio" aria-autocomplete="list" aria-controls="sugerencias"
                oninput="mostrarSugerencias()" onkeydown="teclaBusqueda(event)" onfocus="document.getElementById('busqueda').value=''; mostrarSugerencias();">
-        <button type="button" onclick="buscar()" aria-label="Buscar edificio">Buscar</button>
+        <button type="button" class="btn-icon" onclick="buscar()" aria-label="Buscar edificio" title="Buscar">🔍</button>
+        <button type="button" class="btn-icon btn-ubicacion" onclick="irAMiUbicacion()" aria-label="Mi ubicación" title="Mi ubicación (Ctrl+L)">📍</button>
     </div>
     <ul id="sugerencias" role="listbox" aria-label="Sugerencias de edificios"></ul>
-    <div style="display:flex; gap:6px; width:100%; flex-wrap: wrap;">
-        <button type="button" onclick="irAMiUbicacion()" aria-label="Centrar mapa en mi ubicación" title="Centrar en mi ubicación (Ctrl+L)">📍 Mi ubicación</button>
-        <button type="button" class="secondary" id="btn-compartir" onclick="compartirEdificio()" aria-label="Compartir enlace del edificio seleccionado" title="Compartir edificio (Ctrl+Shift+C)" style="display:none;">🔗 Compartir</button>
-        <button type="button" class="secondary" id="btn-llegar" onclick="comoLlegar()" aria-label="Abrir navegación al edificio" title="Cómo llegar al edificio" style="display:none;">🧭 Cómo llegar</button>
-        <button type="button" class="secondary" id="toggle-puertas-btn" onclick="togglePuertas()" aria-label="Mostrar u ocultar puertas de acceso" title="Mostrar/ocultar puertas de acceso">🚘 Mostrar Accesos</button>
+    <div id="toolbar-general" class="toolbar">
+        <button type="button" class="secondary" id="toggle-puertas-btn" onclick="togglePuertas()" aria-label="Mostrar u ocultar puertas de acceso" title="Mostrar/ocultar puertas de acceso">
+            <span class="btn-emoji">🚘</span><span class="btn-label">Mostrar Accesos</span>
+        </button>
+    </div>
+    <div id="toolbar-edificio" class="toolbar toolbar-edificio" style="display:none;">
+        <span id="edificio-nombre" class="edificio-nombre-tag"></span>
+        <div class="toolbar-actions">
+            <button type="button" class="secondary" id="btn-compartir" onclick="compartirEdificio()" aria-label="Compartir enlace" title="Compartir (Ctrl+Shift+C)">
+                <span class="btn-emoji">🔗</span><span class="btn-label">Compartir</span>
+            </button>
+            <button type="button" class="secondary" id="btn-llegar" onclick="comoLlegar()" aria-label="Cómo llegar" title="Cómo llegar">
+                <span class="btn-emoji">🧭</span><span class="btn-label">Cómo llegar</span>
+            </button>
+            <button type="button" class="btn-cerrar" id="btn-cerrar" onclick="limpiarEdificioSeleccionado(); document.getElementById('busqueda').value='';" aria-label="Cerrar selección" title="Cerrar">✕</button>
+        </div>
     </div>
 </div>
 

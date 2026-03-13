@@ -114,17 +114,23 @@ function actualizarVisibilidadPuertas() {
             if (map.hasLayer(m)) map.removeLayer(m);
         }
     });
-    var btn = document.getElementById('toggle-puertas-btn');
-    if (btn) btn.style.display = (z >= 17 && z <= 18) ? '' : 'none';
+    var toolbar = document.getElementById('toolbar-general');
+    if (toolbar) toolbar.style.display = (z >= 17 && z <= 18) ? '' : 'none';
 }
 
 function togglePuertas() {
     mostrarPuertas = !mostrarPuertas;
-    var btn = document.getElementById('toggle-puertas-btn');
-    if (btn) {
-        btn.textContent = mostrarPuertas ? '🚘 Ocultar Acceso' : '🚘 Mostrar Acceso';
-    }
+    actualizarLeyendaPuertas();
     actualizarVisibilidadPuertas();
+}
+
+function actualizarLeyendaPuertas() {
+    var btn = document.getElementById('toggle-puertas-btn');
+    if (!btn) return;
+    var label = btn.querySelector('.btn-label');
+    if (label) {
+        label.textContent = mostrarPuertas ? 'Ocultar Accesos' : 'Mostrar Accesos';
+    }
 }
 
 map.on('zoomend', actualizarVisibilidadPuertas);
@@ -195,10 +201,10 @@ function irAEdificio(nombre) {
 
     edificioSeleccionado = nombre;
     document.title = nombre + ' - Demet Toreo';
-    var btnCompartir = document.getElementById('btn-compartir');
-    var btnLlegar = document.getElementById('btn-llegar');
-    if (btnCompartir) btnCompartir.style.display = 'inline-flex';
-    if (btnLlegar) btnLlegar.style.display = 'inline-flex';
+    var toolbarEdificio = document.getElementById('toolbar-edificio');
+    var nombreTag = document.getElementById('edificio-nombre');
+    if (toolbarEdificio) toolbarEdificio.style.display = 'flex';
+    if (nombreTag) nombreTag.textContent = nombre;
     actualizarUrlEdificio(nombre);
 
     var cercana = puertaMasCercana(latlng.lat, latlng.lng);
@@ -214,10 +220,8 @@ function limpiarEdificioSeleccionado() {
     }
     edificioSeleccionado = null;
     document.title = 'Buscador de Edificios - Demet Toreo';
-    var btnCompartir = document.getElementById('btn-compartir');
-    var btnLlegar = document.getElementById('btn-llegar');
-    if (btnCompartir) btnCompartir.style.display = 'none';
-    if (btnLlegar) btnLlegar.style.display = 'none';
+    var toolbarEdificio = document.getElementById('toolbar-edificio');
+    if (toolbarEdificio) toolbarEdificio.style.display = 'none';
     actualizarUrlEdificio(null);
 }
 
