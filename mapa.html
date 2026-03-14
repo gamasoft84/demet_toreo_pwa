@@ -37,7 +37,7 @@
         <input type="text" id="busqueda" placeholder="Buscar edificio..." autocomplete="off"
                aria-label="Nombre del edificio" aria-autocomplete="list" aria-controls="sugerencias"
                oninput="mostrarSugerencias()" onkeydown="teclaBusqueda(event)" onfocus="document.getElementById('busqueda').value=''; mostrarSugerencias();">
-        <button type="button" class="btn-icon" onclick="buscar()" aria-label="Buscar edificio" title="Buscar">🔍</button>
+        <button type="button" class="btn-icon" onclick="buscar()" aria-label="Buscar edificio" title="Buscar">⌕</button>
     </div>
     <ul id="sugerencias" role="listbox" aria-label="Sugerencias de edificios"></ul>
     <div class="pill-bar">
@@ -45,7 +45,7 @@
             <span class="pill-dot" style="background:#34a853;"></span>Mi ubicación
         </button>
         <button type="button" class="pill" id="btn-capa" onclick="toggleCapa()" aria-label="Cambiar capa del mapa" title="Cambiar a Satélite">
-            <span class="pill-dot" style="background:#ea4335;"></span>Satélite
+            <span class="pill-dot" style="background:#e3e3e3;"></span>Satélite
         </button>
         <button type="button" class="pill pill-edificio" id="btn-compartir" onclick="compartirEdificio()" aria-label="Compartir enlace" title="Compartir (Ctrl+Shift+C)" style="display:none;">
             <span class="pill-dot" style="background:#4285f4;"></span>Compartir
