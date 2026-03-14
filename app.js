@@ -94,7 +94,7 @@ fetch('datos.json')
                 iconSize: [14, 14],
                 iconAnchor: [7, 7]
             });
-            var marker = L.marker([edif.lat, edif.lng], { icon: dotIcon }).addTo(map);
+            var marker = L.marker([edif.lat, edif.lng], { icon: dotIcon });
             marker.on('click', function() {
                 document.getElementById('busqueda').value = edif.nombre;
                 irAEdificio(edif.nombre);
@@ -104,7 +104,7 @@ fetch('datos.json')
 
         puertasDatos = puertas;
         puertas.forEach(crearPuertaMarker);
-        actualizarVisibilidadPuertas();
+        actualizarVisibilidadMarcadores();
 
         // Si la URL tiene ?edificio=Nombre, ir a ese edificio
         var params = new URLSearchParams(window.location.search);
@@ -124,12 +124,22 @@ fetch('datos.json')
         ocultarSplash();
     });
 
-function actualizarVisibilidadPuertas() {
+function actualizarVisibilidadMarcadores() {
     var z = map.getZoom();
-    var visible = z >= 17 && z <= 18;
+    var puertasVisibles = z >= 17 && z <= 18;
+    var edificiosVisibles = z >= 17;
 
     puertaMarkers.forEach(function(m) {
-        if (visible) {
+        if (puertasVisibles) {
+            if (!map.hasLayer(m)) m.addTo(map);
+        } else {
+            if (map.hasLayer(m)) map.removeLayer(m);
+        }
+    });
+
+    Object.keys(markers).forEach(function(key) {
+        var m = markers[key];
+        if (edificiosVisibles) {
             if (!map.hasLayer(m)) m.addTo(map);
         } else {
             if (map.hasLayer(m)) map.removeLayer(m);
@@ -137,9 +147,9 @@ function actualizarVisibilidadPuertas() {
     });
 }
 
-map.on('zoomend', actualizarVisibilidadPuertas);
+map.on('zoomend', actualizarVisibilidadMarcadores);
 
-actualizarVisibilidadPuertas();
+actualizarVisibilidadMarcadores();
 
 // 4. Búsqueda y sugerencias
 function edificiosCoincidentes(texto) {
