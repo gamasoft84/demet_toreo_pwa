@@ -44,6 +44,7 @@ var marcadorEdificioActual = null;
 var edificioSeleccionado = null;
 var puertaMarkers = [];
 var puertasDatos = [];
+var notificadoProximidad = false;
 
 function crearIconoEdificio(nombre) {
     var safeName = nombre.replace(/"/g, '&quot;');
@@ -192,6 +193,7 @@ function irAEdificio(nombre) {
     map.setView(latlng, 19);
 
     edificioSeleccionado = nombre;
+    notificadoProximidad = false;
     document.title = nombre + ' - Demet Toreo';
     var btnCompartir = document.getElementById('btn-compartir');
     var btnLlegar = document.getElementById('btn-llegar');
@@ -360,7 +362,22 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// 5. Geolocalización: marcador de "Mi ubicación" con seguimiento continuo
+// 5. Notificación de proximidad
+function verificarProximidad(latlng) {
+    if (!edificioSeleccionado || notificadoProximidad) return;
+    var key = edificioSeleccionado.toLowerCase();
+    var destMarker = markers[key];
+    if (!destMarker) return;
+    var dest = destMarker.getLatLng();
+    var dist = distanciaEntre(latlng.lat, latlng.lng, dest.lat, dest.lng);
+    if (dist <= 50) {
+        notificadoProximidad = true;
+        mostrarToast('📍 Estás cerca de ' + edificioSeleccionado + ' (~' + Math.round(dist) + 'm)');
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+    }
+}
+
+// 6. Geolocalización: marcador de "Mi ubicación" con seguimiento continuo
 var marcadorUbicacion = null;
 var circuloPrecision = null;
 var ubicacionActiva = false;
@@ -425,6 +442,8 @@ map.on('locationfound', function(e) {
         map.setView(e.latlng, 18);
         primerUbicacion = false;
     }
+
+    verificarProximidad(e.latlng);
 });
 
 map.on('locationerror', function() {
