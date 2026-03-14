@@ -360,7 +360,45 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// 5. Geolocalización: marcador de "Mi ubicación" con seguimiento continuo
+// 5. Proximidad: banner persistente cuando estás cerca de un edificio
+var edificioCercanoActual = null;
+
+function verificarProximidad(latlng) {
+    var cercano = null;
+    var distMin = Infinity;
+    edificios.forEach(function(edif) {
+        var d = distanciaEntre(latlng.lat, latlng.lng, edif.lat, edif.lng);
+        if (d <= 15 && d < distMin) {
+            distMin = d;
+            cercano = edif.nombre;
+        }
+    });
+
+    var banner = document.getElementById('proximidad-banner');
+
+    if (cercano) {
+        if (edificioCercanoActual !== cercano) {
+            edificioCercanoActual = cercano;
+            if (banner) banner.remove();
+            banner = document.createElement('div');
+            banner.id = 'proximidad-banner';
+            banner.textContent = '📍 Estás cerca de ' + cercano;
+            banner.onclick = function() { irAEdificio(cercano); };
+            document.body.appendChild(banner);
+            if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        }
+    } else {
+        if (edificioCercanoActual) {
+            edificioCercanoActual = null;
+            if (banner) {
+                banner.classList.add('saliendo');
+                setTimeout(function() { banner.remove(); }, 300);
+            }
+        }
+    }
+}
+
+// 6. Geolocalización: marcador de "Mi ubicación" con seguimiento continuo
 var marcadorUbicacion = null;
 var circuloPrecision = null;
 var ubicacionActiva = false;
@@ -377,6 +415,9 @@ function irAMiUbicacion() {
         primerUbicacion = true;
         if (marcadorUbicacion) { map.removeLayer(marcadorUbicacion); marcadorUbicacion = null; }
         if (circuloPrecision) { map.removeLayer(circuloPrecision); circuloPrecision = null; }
+        edificioCercanoActual = null;
+        var bannerProx = document.getElementById('proximidad-banner');
+        if (bannerProx) bannerProx.remove();
         var btn = document.getElementById('btn-ubicacion');
         if (btn) btn.classList.remove('active');
         mostrarToast('Ubicación desactivada');
@@ -425,6 +466,8 @@ map.on('locationfound', function(e) {
         map.setView(e.latlng, 18);
         primerUbicacion = false;
     }
+
+    verificarProximidad(e.latlng);
 });
 
 map.on('locationerror', function() {

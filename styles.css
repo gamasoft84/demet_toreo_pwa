@@ -236,5 +236,30 @@ button:focus-visible { outline: 2px solid #2b7cff; outline-offset: 2px; }
     font-weight: 700;
 }
 
+#proximidad-banner {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(26, 115, 232, 0.92);
+    backdrop-filter: blur(10px);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 28px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    z-index: 10000;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    white-space: nowrap;
+    pointer-events: auto;
+    animation: bannerIn 0.3s ease;
+    cursor: pointer;
+}
+#proximidad-banner.saliendo {
+    animation: bannerOut 0.3s ease forwards;
+}
+@keyframes bannerIn { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+@keyframes bannerOut { from { opacity: 1; transform: translateX(-50%) translateY(0); } to { opacity: 0; transform: translateX(-50%) translateY(20px); } }
+
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
