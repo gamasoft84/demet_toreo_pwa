@@ -259,5 +259,21 @@ button:focus-visible { outline: 2px solid #2b7cff; outline-offset: 2px; }
 @keyframes bannerIn { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 @keyframes bannerOut { from { opacity: 1; transform: translateX(-50%) translateY(0); } to { opacity: 0; transform: translateX(-50%) translateY(20px); } }
 
+/* Punto discreto de edificio en el mapa */
+.edificio-dot {
+    width: 10px;
+    height: 10px;
+    background: #2b7cff;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease;
+}
+.edificio-dot:hover {
+    transform: scale(1.4);
+    background: #1a6ae6;
+}
+
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }

@@ -88,7 +88,17 @@ fetch('datos.json')
         var puertas = data.puertas || [];
 
         edificios.forEach(function(edif) {
-            var marker = L.marker([edif.lat, edif.lng]);
+            var dotIcon = L.divIcon({
+                className: '',
+                html: '<div class="edificio-dot"></div>',
+                iconSize: [14, 14],
+                iconAnchor: [7, 7]
+            });
+            var marker = L.marker([edif.lat, edif.lng], { icon: dotIcon }).addTo(map);
+            marker.on('click', function() {
+                document.getElementById('busqueda').value = edif.nombre;
+                irAEdificio(edif.nombre);
+            });
             markers[edif.nombre.toLowerCase()] = marker;
         });
 
