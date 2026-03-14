@@ -1,58 +1,5 @@
 // Demet Toreo PWA - App principal
 
-// i18n
-var idiomaActual = 'es';
-var traducciones = {
-    es: {
-        search_placeholder: 'Buscar edificio o local...',
-        mi_ubicacion: 'Mi ubicación', satelite: 'Satélite', mapa: 'Mapa',
-        lista: 'Lista', compartir: 'Compartir', como_llegar: 'Cómo llegar',
-        directorio: 'Directorio', edificios: 'Edificios', piso: 'Piso',
-        sin_directorio: 'No hay directorio disponible.', cercania: 'Cercanía',
-        ubicacion_desactivada: 'Ubicación desactivada',
-        obteniendo_ubicacion: 'Obteniendo ubicación...',
-        no_ubicacion: 'No se pudo obtener tu ubicación',
-        enlace_copiado: 'Enlace copiado', sin_geolocalizacion: 'Tu navegador no soporta geolocalización.',
-        sin_coincidencia: 'Ningún edificio o local coincide.',
-        puerta_cercana: 'Puerta más cercana', titulo_base: 'Buscador de Edificios - Demet Toreo',
-        estas_aqui: 'Estás aquí', cerca_edificio: 'Estás cerca de', qr_titulo: 'QR para compartir'
-    },
-    en: {
-        search_placeholder: 'Search building or business...',
-        mi_ubicacion: 'My location', satelite: 'Satellite', mapa: 'Map',
-        lista: 'List', compartir: 'Share', como_llegar: 'Directions',
-        directorio: 'Directory', edificios: 'Buildings', piso: 'Floor',
-        sin_directorio: 'No directory available.', cercania: 'Proximity',
-        ubicacion_desactivada: 'Location disabled',
-        obteniendo_ubicacion: 'Getting location...',
-        no_ubicacion: 'Could not get your location',
-        enlace_copiado: 'Link copied', sin_geolocalizacion: 'Your browser does not support geolocation.',
-        sin_coincidencia: 'No building or business matches.',
-        puerta_cercana: 'Nearest gate', titulo_base: 'Building Finder - Demet Toreo',
-        estas_aqui: 'You are here', cerca_edificio: 'You are near', qr_titulo: 'QR to share'
-    }
-};
-function t(clave) { return (traducciones[idiomaActual] && traducciones[idiomaActual][clave]) || clave; }
-
-function toggleIdioma() {
-    idiomaActual = (idiomaActual === 'es') ? 'en' : 'es';
-    var label = document.getElementById('idioma-label');
-    if (label) label.textContent = (idiomaActual === 'es') ? 'EN' : 'ES';
-    aplicarTraducciones();
-}
-function aplicarTraducciones() {
-    var el;
-    el = document.getElementById('busqueda'); if (el) el.placeholder = t('search_placeholder');
-    el = document.getElementById('btn-ubicacion'); if (el) el.lastChild.textContent = t('mi_ubicacion');
-    el = document.getElementById('btn-capa'); if (el) el.lastChild.textContent = (capaActual === 'calles') ? t('satelite') : t('mapa');
-    el = document.getElementById('btn-lista'); if (el) el.lastChild.textContent = t('lista');
-    el = document.getElementById('btn-compartir'); if (el) el.lastChild.textContent = t('compartir');
-    el = document.getElementById('btn-llegar'); if (el) el.lastChild.textContent = t('como_llegar');
-    el = document.getElementById('btn-directorio'); if (el) el.lastChild.textContent = t('directorio');
-    el = document.querySelector('.lista-titulo'); if (el) el.textContent = t('edificios');
-    if (!edificioSeleccionado) document.title = t('titulo_base');
-}
-
 // 1. Configurar el mapa centrado en Lomas de Sotelo
 var map = L.map('map', {
     rotate: true,
@@ -81,12 +28,12 @@ function toggleCapa() {
         map.removeLayer(mapaCalles);
         mapaSatelite.addTo(map);
         capaActual = 'satelite';
-        if (btn) { btn.lastChild.textContent = t('mapa'); btn.title = t('mapa'); }
+        if (btn) { btn.lastChild.textContent = 'Mapa'; btn.title = 'Cambiar a Mapa'; }
     } else {
         map.removeLayer(mapaSatelite);
         mapaCalles.addTo(map);
         capaActual = 'calles';
-        if (btn) { btn.lastChild.textContent = t('satelite'); btn.title = t('satelite'); }
+        if (btn) { btn.lastChild.textContent = 'Satélite'; btn.title = 'Cambiar a Satélite'; }
     }
 }
 
@@ -97,9 +44,6 @@ var marcadorEdificioActual = null;
 var edificioSeleccionado = null;
 var puertaMarkers = [];
 var puertasDatos = [];
-var directorioDatos = {};
-var lineaRuta = null;
-var notificadoProximidad = false;
 
 function crearIconoEdificio(nombre) {
     var safeName = nombre.replace(/"/g, '&quot;');
@@ -149,7 +93,6 @@ fetch('datos.json')
         });
 
         puertasDatos = puertas;
-        directorioDatos = data.directorio || {};
         puertas.forEach(crearPuertaMarker);
         actualizarVisibilidadPuertas();
 
@@ -188,51 +131,26 @@ map.on('zoomend', actualizarVisibilidadPuertas);
 
 actualizarVisibilidadPuertas();
 
-// 4. Búsqueda y sugerencias (edificios + locales del directorio)
-function buscarCoincidencias(texto) {
-    var q = (texto || '').toLowerCase().trim();
-    var resultados = [];
-    if (!q) {
-        edificios.forEach(function(e) { resultados.push({ tipo: 'edificio', nombre: e.nombre, edificio: e.nombre }); });
-        return resultados;
-    }
-    edificios.forEach(function(e) {
-        if (e.nombre.toLowerCase().indexOf(q) >= 0) {
-            resultados.push({ tipo: 'edificio', nombre: e.nombre, edificio: e.nombre });
-        }
-    });
-    Object.keys(directorioDatos).forEach(function(edif) {
-        directorioDatos[edif].forEach(function(item) {
-            if (item.local.toLowerCase().indexOf(q) >= 0) {
-                resultados.push({ tipo: 'local', nombre: item.local, edificio: edif, piso: item.piso });
-            }
-        });
-    });
-    return resultados;
+// 4. Búsqueda y sugerencias
+function edificiosCoincidentes(texto) {
+    var t = (texto || '').toLowerCase().trim();
+    if (!t) return edificios.map(function(e) { return e.nombre; });
+    return edificios
+        .filter(function(e) { return e.nombre.toLowerCase().indexOf(t) >= 0; })
+        .map(function(e) { return e.nombre; });
 }
 
 function mostrarSugerencias() {
     var input = document.getElementById('busqueda');
     var ul = document.getElementById('sugerencias');
-    var resultados = buscarCoincidencias(input.value);
+    var nombres = edificiosCoincidentes(input.value);
     ul.innerHTML = '';
     ul.classList.remove('visible');
-    if (resultados.length === 0) return;
-    resultados.slice(0, 12).forEach(function(r) {
+    if (nombres.length === 0) return;
+    nombres.slice(0, 12).forEach(function(nombre) {
         var li = document.createElement('li');
-        if (r.tipo === 'local') {
-            li.innerHTML = '<span style="opacity:0.5;font-size:0.75rem;">📍 ' + r.edificio + ' · ' + r.piso + '</span><br>' + r.nombre;
-        } else {
-            li.textContent = r.nombre;
-        }
-        li.onclick = function() {
-            input.value = r.edificio;
-            ul.classList.remove('visible');
-            irAEdificio(r.edificio);
-            if (r.tipo === 'local') {
-                setTimeout(function() { mostrarDirectorio(); }, 600);
-            }
-        };
+        li.textContent = nombre;
+        li.onclick = function() { input.value = nombre; ul.classList.remove('visible'); irAEdificio(nombre); };
         ul.appendChild(li);
     });
     ul.classList.add('visible');
@@ -271,23 +189,19 @@ function irAEdificio(nombre) {
 
     var latlng = baseMarker.getLatLng();
     marcadorEdificioActual = L.marker(latlng, { icon: crearIconoEdificio(nombre) }).addTo(map);
-    map.flyTo(latlng, 19, { duration: 1.2 });
+    map.setView(latlng, 19);
 
     edificioSeleccionado = nombre;
-    notificadoProximidad = false;
     document.title = nombre + ' - Demet Toreo';
     var btnCompartir = document.getElementById('btn-compartir');
     var btnLlegar = document.getElementById('btn-llegar');
-    var btnDirectorio = document.getElementById('btn-directorio');
     if (btnCompartir) btnCompartir.style.display = 'inline-flex';
     if (btnLlegar) btnLlegar.style.display = 'inline-flex';
-    if (btnDirectorio) btnDirectorio.style.display = directorioDatos[nombre] ? 'inline-flex' : 'none';
     actualizarUrlEdificio(nombre);
-    dibujarRuta();
 
     var cercana = puertaMasCercana(latlng.lat, latlng.lng);
     if (cercana) {
-        mostrarToast('🚘 ' + t('puerta_cercana') + ': ' + cercana.puerta.nombre + ' (~' + cercana.distancia + 'm)');
+        mostrarToast('🚘 Puerta más cercana: ' + cercana.puerta.nombre + ' (~' + cercana.distancia + 'm)');
     }
 }
 
@@ -297,16 +211,11 @@ function limpiarEdificioSeleccionado() {
         marcadorEdificioActual = null;
     }
     edificioSeleccionado = null;
-    notificadoProximidad = false;
-    document.title = t('titulo_base');
+    document.title = 'Buscador de Edificios - Demet Toreo';
     var btnCompartir = document.getElementById('btn-compartir');
     var btnLlegar = document.getElementById('btn-llegar');
-    var btnDirectorio = document.getElementById('btn-directorio');
     if (btnCompartir) btnCompartir.style.display = 'none';
     if (btnLlegar) btnLlegar.style.display = 'none';
-    if (btnDirectorio) btnDirectorio.style.display = 'none';
-    borrarRuta();
-    cerrarDirectorio();
     actualizarUrlEdificio(null);
 }
 
@@ -325,8 +234,6 @@ function compartirEdificio() {
     if (!edificioSeleccionado) return;
     var url = window.location.origin + window.location.pathname + '?edificio=' + encodeURIComponent(edificioSeleccionado);
 
-    copiarAlPortapapeles(url);
-
     if (navigator.share && navigator.canShare && navigator.canShare({ url: url })) {
         navigator.share({
             title: edificioSeleccionado + ' - Demet Toreo',
@@ -334,34 +241,8 @@ function compartirEdificio() {
             url: url
         }).catch(function() {});
     } else {
-        mostrarQR(url);
+        window.open(url, '_blank');
     }
-}
-
-function mostrarQR(url) {
-    var existente = document.getElementById('qr-modal');
-    if (existente) existente.remove();
-    var modal = document.createElement('div');
-    modal.id = 'qr-modal';
-    modal.style.cssText = 'position:fixed;inset:0;z-index:11000;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;animation:fadeIn 0.2s ease;';
-    modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
-    var card = document.createElement('div');
-    card.style.cssText = 'background:rgba(20,28,55,0.95);backdrop-filter:blur(12px);border-radius:16px;padding:20px;text-align:center;max-width:280px;width:90%;';
-    var titulo = document.createElement('div');
-    titulo.style.cssText = 'color:#fff;font-weight:600;font-size:0.9rem;margin-bottom:12px;';
-    titulo.textContent = t('qr_titulo');
-    var img = document.createElement('img');
-    img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(url);
-    img.alt = 'QR';
-    img.style.cssText = 'width:200px;height:200px;border-radius:10px;background:#fff;padding:8px;';
-    var urlText = document.createElement('div');
-    urlText.style.cssText = 'color:rgba(255,255,255,0.5);font-size:0.7rem;margin-top:10px;word-break:break-all;';
-    urlText.textContent = url;
-    card.appendChild(titulo);
-    card.appendChild(img);
-    card.appendChild(urlText);
-    modal.appendChild(card);
-    document.body.appendChild(modal);
 }
 
 function comoLlegar() {
@@ -409,7 +290,7 @@ function puertaMasCercana(lat, lng) {
 function copiarAlPortapapeles(texto) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(texto).then(function() {
-            mostrarToast(t('enlace_copiado'));
+            mostrarToast('Enlace copiado');
         }).catch(function() { fallbackCopiar(texto); });
     } else {
         fallbackCopiar(texto);
@@ -425,7 +306,7 @@ function fallbackCopiar(texto) {
     ta.select();
     try {
         document.execCommand('copy');
-        mostrarToast(t('enlace_copiado'));
+        mostrarToast('Enlace copiado');
     } catch (e) {}
     document.body.removeChild(ta);
 }
@@ -444,15 +325,12 @@ function mostrarToast(mensaje) {
 
 function buscar() {
     var query = document.getElementById('busqueda').value.trim();
-    var resultados = buscarCoincidencias(query);
+    var nombres = edificiosCoincidentes(query);
     document.getElementById('sugerencias').classList.remove('visible');
-    if (resultados.length > 0) {
-        irAEdificio(resultados[0].edificio);
-        if (resultados[0].tipo === 'local') {
-            setTimeout(function() { mostrarDirectorio(); }, 600);
-        }
+    if (nombres.length > 0) {
+        irAEdificio(nombres[0]);
     } else {
-        mostrarToast(t('sin_coincidencia'));
+        alert('Ningún edificio coincide. Escribe parte del nombre o elige de la lista.');
     }
 }
 
@@ -482,141 +360,7 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// 5. Ruta peatonal: línea desde ubicación al edificio
-function dibujarRuta() {
-    borrarRuta();
-    if (!edificioSeleccionado || !marcadorUbicacion) return;
-    var origen = marcadorUbicacion.getLatLng();
-    var key = edificioSeleccionado.toLowerCase();
-    var destMarker = markers[key];
-    if (!destMarker) return;
-    var destino = destMarker.getLatLng();
-    lineaRuta = L.polyline([origen, destino], {
-        color: '#2b7cff', weight: 4, opacity: 0.7,
-        dashArray: '10, 8', lineCap: 'round'
-    }).addTo(map);
-}
-function borrarRuta() {
-    if (lineaRuta && map.hasLayer(lineaRuta)) { map.removeLayer(lineaRuta); lineaRuta = null; }
-}
-function actualizarRuta() {
-    if (!lineaRuta || !marcadorUbicacion || !edificioSeleccionado) return;
-    var origen = marcadorUbicacion.getLatLng();
-    var key = edificioSeleccionado.toLowerCase();
-    var destMarker = markers[key];
-    if (!destMarker) return;
-    lineaRuta.setLatLngs([origen, destMarker.getLatLng()]);
-}
-
-// 6. Directorio de locales del edificio
-function mostrarDirectorio() {
-    if (!edificioSeleccionado) return;
-    var panel = document.getElementById('panel-directorio');
-    var titulo = document.getElementById('directorio-titulo');
-    var ul = document.getElementById('directorio-lista');
-    var vacio = document.getElementById('directorio-vacio');
-    if (!panel || !ul) return;
-
-    titulo.textContent = edificioSeleccionado + ' — ' + t('directorio');
-    ul.innerHTML = '';
-
-    var locales = directorioDatos[edificioSeleccionado];
-    if (locales && locales.length > 0) {
-        if (vacio) vacio.style.display = 'none';
-        locales.forEach(function(item) {
-            var li = document.createElement('li');
-            var piso = document.createElement('span');
-            piso.className = 'directorio-piso';
-            piso.textContent = item.piso === 'PB' ? 'PB' : (t('piso') + ' ' + item.piso);
-            var local = document.createElement('span');
-            local.className = 'directorio-local';
-            local.textContent = item.local;
-            li.appendChild(piso);
-            li.appendChild(local);
-            ul.appendChild(li);
-        });
-    } else {
-        if (vacio) { vacio.textContent = t('sin_directorio'); vacio.style.display = ''; }
-    }
-    panel.style.display = '';
-}
-function cerrarDirectorio() {
-    var panel = document.getElementById('panel-directorio');
-    if (panel) panel.style.display = 'none';
-}
-
-// 7. Vista lista de edificios
-var listaVisible = false;
-var ordenLista = 'az';
-
-function toggleLista() {
-    listaVisible = !listaVisible;
-    var panel = document.getElementById('panel-lista');
-    var btn = document.getElementById('btn-lista');
-    if (listaVisible) {
-        renderizarLista();
-        panel.style.display = '';
-        if (btn) btn.classList.add('active');
-    } else {
-        panel.style.display = 'none';
-        if (btn) btn.classList.remove('active');
-    }
-}
-function toggleOrdenLista() {
-    ordenLista = (ordenLista === 'az') ? 'dist' : 'az';
-    var btnOrden = document.getElementById('btn-orden');
-    if (btnOrden) btnOrden.lastChild.textContent = (ordenLista === 'az') ? 'A-Z' : t('cercania');
-    renderizarLista();
-}
-function renderizarLista() {
-    var ul = document.getElementById('lista-edificios');
-    if (!ul) return;
-    ul.innerHTML = '';
-    var lista = edificios.slice();
-    var ubicacion = marcadorUbicacion ? marcadorUbicacion.getLatLng() : null;
-
-    if (ordenLista === 'dist' && ubicacion) {
-        lista.sort(function(a, b) {
-            return distanciaEntre(ubicacion.lat, ubicacion.lng, a.lat, a.lng)
-                 - distanciaEntre(ubicacion.lat, ubicacion.lng, b.lat, b.lng);
-        });
-    } else {
-        lista.sort(function(a, b) { return a.nombre.localeCompare(b.nombre); });
-    }
-
-    lista.forEach(function(edif) {
-        var li = document.createElement('li');
-        var nombre = document.createElement('span');
-        nombre.textContent = edif.nombre;
-        li.appendChild(nombre);
-        if (ubicacion) {
-            var d = Math.round(distanciaEntre(ubicacion.lat, ubicacion.lng, edif.lat, edif.lng));
-            var dist = document.createElement('span');
-            dist.className = 'lista-dist';
-            dist.textContent = d >= 1000 ? (d / 1000).toFixed(1) + ' km' : d + ' m';
-            li.appendChild(dist);
-        }
-        li.onclick = function() { toggleLista(); irAEdificio(edif.nombre); };
-        ul.appendChild(li);
-    });
-}
-
-// 8. Notificación de proximidad
-function verificarProximidad(latlng) {
-    if (!edificioSeleccionado || notificadoProximidad) return;
-    var key = edificioSeleccionado.toLowerCase();
-    var destMarker = markers[key];
-    if (!destMarker) return;
-    var dest = destMarker.getLatLng();
-    var dist = distanciaEntre(latlng.lat, latlng.lng, dest.lat, dest.lng);
-    if (dist <= 50) {
-        notificadoProximidad = true;
-        mostrarToast('📍 ' + t('cerca_edificio') + ' ' + edificioSeleccionado + ' (~' + Math.round(dist) + 'm)');
-        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-    }
-}
-
-// 9. Geolocalización: marcador de "Mi ubicación" con seguimiento continuo
+// 5. Geolocalización: marcador de "Mi ubicación" con seguimiento continuo
 var marcadorUbicacion = null;
 var circuloPrecision = null;
 var ubicacionActiva = false;
@@ -624,7 +368,7 @@ var primerUbicacion = true;
 
 function irAMiUbicacion() {
     if (!navigator.geolocation) {
-        mostrarToast(t('sin_geolocalizacion'));
+        alert('Tu navegador no soporta geolocalización.');
         return;
     }
     if (ubicacionActiva) {
@@ -633,17 +377,16 @@ function irAMiUbicacion() {
         primerUbicacion = true;
         if (marcadorUbicacion) { map.removeLayer(marcadorUbicacion); marcadorUbicacion = null; }
         if (circuloPrecision) { map.removeLayer(circuloPrecision); circuloPrecision = null; }
-        borrarRuta();
         var btn = document.getElementById('btn-ubicacion');
         if (btn) btn.classList.remove('active');
-        mostrarToast(t('ubicacion_desactivada'));
+        mostrarToast('Ubicación desactivada');
         return;
     }
     ubicacionActiva = true;
     primerUbicacion = true;
     var btn = document.getElementById('btn-ubicacion');
     if (btn) btn.classList.add('active');
-    mostrarToast(t('obteniendo_ubicacion'));
+    mostrarToast('Obteniendo ubicación...');
     map.locate({ watch: true, maxZoom: 18, enableHighAccuracy: true });
 }
 
@@ -675,23 +418,19 @@ map.on('locationfound', function(e) {
                 iconSize: [22, 22],
                 iconAnchor: [11, 11]
             })
-        }).addTo(map).bindPopup('<b>' + t('estas_aqui') + '</b>');
+        }).addTo(map).bindPopup('<b>Estás aquí</b>');
     }
 
     if (primerUbicacion) {
         map.setView(e.latlng, 18);
         primerUbicacion = false;
-        if (edificioSeleccionado) dibujarRuta();
     }
-
-    actualizarRuta();
-    verificarProximidad(e.latlng);
 });
 
 map.on('locationerror', function() {
     var toast = document.getElementById('toast');
     if (toast) toast.remove();
-    mostrarToast(t('no_ubicacion'));
+    mostrarToast('No se pudo obtener tu ubicación');
 });
 
 // PWA: registrar Service Worker para uso offline y mostrar versión
