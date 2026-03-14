@@ -11,7 +11,7 @@ Sigue estos pasos para publicar la app en **GitHub Pages**. La URL quedará así
 2. Clic en **"+"** (arriba derecha) → **"New repository"**.
 3. Configura:
    - **Repository name:** `demet_pwa` (o el nombre que quieras; la URL usará este nombre).
-   - **Description:** opcional, ej. "Mapa de edificios Demet Toreo".
+   - **Description:** opcional, ej. "Mapa de edificios Demet Toreo I y II".
    - **Public**.
    - No marques "Add a README" (si ya tienes archivos locales).
 4. Clic en **"Create repository"**.

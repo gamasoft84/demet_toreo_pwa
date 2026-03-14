@@ -1,7 +1,7 @@
 {
-  "name": "Demet Toreo - Mapa de Edificios",
+  "name": "Demet Toreo I y II - Mapa de Edificios",
   "short_name": "Demet Toreo",
-  "description": "Mapa de edificios y puertas de acceso de Demet Toreo I y II.",
+  "description": "Mapa interactivo de edificios y puertas de acceso de Demet Toreo I y II.",
   "start_url": "./mapa.html",
   "scope": "./",
   "display": "standalone",
