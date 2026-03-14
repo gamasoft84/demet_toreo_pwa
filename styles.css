@@ -82,12 +82,10 @@ button:focus-visible { outline: 2px solid #2b7cff; outline-offset: 2px; }
 .pill:focus-visible { outline: 2px solid #2b7cff; outline-offset: 2px; }
 .pill.active { background: rgba(43, 124, 255, 0.9); }
 
-/* Punto indicador de color */
-.pill-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
+.pill-icon {
+    font-size: 1rem;
+    line-height: 1;
     flex-shrink: 0;
-    box-shadow: 0 0 3px rgba(0,0,0,0.3);
 }
 
 /* Sugerencias */
@@ -121,7 +119,7 @@ button:focus-visible { outline: 2px solid #2b7cff; outline-offset: 2px; }
     #search-container { padding: 8px; gap: 5px; border-radius: 12px; }
     input { padding: 9px 10px; font-size: 0.9rem; }
     .pill { padding: 6px 12px 6px 8px; font-size: 0.75rem; }
-    .pill-dot { width: 8px; height: 8px; }
+    .pill-icon { font-size: 0.85rem; }
 }
 
 /* ── DESKTOP ── */
