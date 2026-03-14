@@ -147,7 +147,7 @@ button:focus-visible { outline: 2px solid #2b7cff; outline-offset: 2px; }
 #splash .splash-dots span:nth-child(3) { animation-delay: 0.4s; }
 @keyframes dot-pulse { 0%,80%,100% { opacity: 0.3; } 40% { opacity: 1; } }
 
-/* Dark mode */
+/* Dark mode (auto del sistema) */
 @media (prefers-color-scheme: dark) {
     body { color: #e0e0e0; }
     #search-container { background: rgba(15, 20, 45, 0.88); }
